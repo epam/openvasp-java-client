@@ -1,6 +1,5 @@
 package org.openvasp.transfer.recording;
 
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -8,6 +7,7 @@ import org.openvasp.client.model.*;
 import org.openvasp.client.session.Session;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -17,16 +17,20 @@ import static org.openvasp.client.model.VaspResponseCode.OK;
  * @author Olexandr_Bilovol@epam.com
  */
 @Slf4j
-public class RecordingTestHandler implements BiConsumer<VaspMessage, Session> {
+final class RecordingTestHandler implements BiConsumer<VaspMessage, Session> {
 
-    final List<LogRecord> transferLog = new ArrayList<>();
+    final List<TransferLogRecord> transferLog;
 
-    @AllArgsConstructor
-    public static class LogRecord {
+    public RecordingTestHandler(final List<TransferLogRecord> transferLog) {
+        if (transferLog != null) {
+            this.transferLog = transferLog;
+        } else {
+            this.transferLog = Collections.synchronizedList(new ArrayList<>());
+        }
+    }
 
-        final VaspCode vaspCode;
-        final VaspMessage vaspMessage;
-
+    public RecordingTestHandler() {
+        this(null);
     }
 
     @Override
@@ -90,7 +94,7 @@ public class RecordingTestHandler implements BiConsumer<VaspMessage, Session> {
     }
 
     void logRecord(final VaspCode vaspCode, final VaspMessage vaspMessage) {
-        transferLog.add(new LogRecord(vaspCode, vaspMessage));
+        transferLog.add(new TransferLogRecord(vaspCode, vaspMessage));
         log.debug("process {} at {}", vaspMessage.getClass().getSimpleName(), vaspCode);
     }
 

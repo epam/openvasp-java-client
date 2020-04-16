@@ -4,8 +4,6 @@ import org.openvasp.client.model.EncryptionType;
 import org.openvasp.client.model.Topic;
 import org.openvasp.client.model.VaspMessage;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author Olexandr_Bilovol@epam.com
  */
@@ -31,7 +29,7 @@ public interface MessageService extends AutoCloseable {
 
     void shutdown();
 
-    boolean waitForTermination(long timeout, TimeUnit unit);
+    boolean waitForTermination(long msTimeout);
 
     @Override
     void close();

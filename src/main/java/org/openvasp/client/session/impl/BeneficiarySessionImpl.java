@@ -58,7 +58,7 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
                     .build());
         }
 
-        if (messageCode.equals(VaspResponseCode.OK) && message instanceof TransferMessage) {
+        if (messageCode.equals(VaspResponseCode.OK.id) && message instanceof TransferMessage) {
             val transferMessage = (TransferMessage) message;
             transferInfo.setTransfer(transferMessage.getTransfer());
         }

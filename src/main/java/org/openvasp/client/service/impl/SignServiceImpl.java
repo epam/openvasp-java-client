@@ -1,10 +1,12 @@
 package org.openvasp.client.service.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.bouncycastle.util.encoders.Hex;
-import org.openvasp.client.service.SignService;
+import org.openvasp.client.service.ContractService;
 import org.web3j.crypto.*;
 import org.web3j.utils.Numeric;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -12,12 +14,33 @@ import java.util.Arrays;
 
 /**
  * @author Jan_Juraszek@epam.com
+ * @author Olexandr_Bilovol@epam.com
  */
 @Singleton
-public final class SignServiceImpl implements SignService {
+public final class SignServiceImpl extends SignServiceBaseImpl {
+
+    private static final int SIGNATURE_LENGTH = 130;
+
+    @Inject
+    public SignServiceImpl(final ContractService contractService) {
+        super(contractService);
+    }
 
     @Override
-    public String signPayload(String payload, String privateKey) {
+    int signatureLength() {
+        return SIGNATURE_LENGTH;
+    }
+
+    /**
+     * Sign the message with given private key
+     *
+     * @param payload    a hex-encoded message
+     * @param privateKey a hex-encoded private key
+     * @return hex-encoded signature
+     */
+    @Override
+    @VisibleForTesting
+    String signPayload(String payload, String privateKey) {
         privateKey = Numeric.cleanHexPrefix(privateKey);
         ECKeyPair keyPair = ECKeyPair.create(Hex.decode(privateKey));
         Sign.SignatureData signature = Sign.signPrefixedMessage(payload.getBytes(StandardCharsets.UTF_8), keyPair);
@@ -26,8 +49,17 @@ public final class SignServiceImpl implements SignService {
         return paddedR + paddedS + Hex.toHexString(signature.getV());
     }
 
+    /**
+     * Verify whether the provided signature for the given message is valid
+     *
+     * @param payload a hex-encoded message
+     * @param sign    a hex-encoded signature
+     * @param pubKey  a hex-encoded public key
+     * @return boolean true if the signature is valid, false otherwise
+     */
     @Override
-    public boolean verifySign(String payload, String sign, String pubKey) {
+    @VisibleForTesting
+    boolean verifySign(String payload, String sign, String pubKey) {
         pubKey = Numeric.cleanHexPrefix(pubKey);
         pubKey = pubKey.length() > 128 ? pubKey.substring(pubKey.length() - 128) : pubKey; // for compatibility with C# client
         String expectedSignerAddress = Keys.getAddress(pubKey);

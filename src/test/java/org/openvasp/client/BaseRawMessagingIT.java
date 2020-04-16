@@ -13,11 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openvasp.client.common.Json.loadTestJson;
-import static org.openvasp.client.common.TestConstants.CONTRACT_ADDRESS_1;
+import static org.openvasp.client.common.TestConstants.*;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -93,9 +92,9 @@ public abstract class BaseRawMessagingIT {
                     message);
         }
 
-        if (!client1.waitForTermination(20, TimeUnit.SECONDS)) {
+        if (!client1.waitForTermination(WAIT_TIMEOUT_1)) {
             client1.shutdown();
-            client1.waitForTermination(5, TimeUnit.SECONDS);
+            client1.waitForTermination(WAIT_TIMEOUT_2);
         }
 
         receivedMessages.sort(Comparator.comparing(message -> message.getHeader().getMessageId()));
@@ -136,9 +135,9 @@ public abstract class BaseRawMessagingIT {
                     message);
         }
 
-        if (!client1.waitForTermination(20, TimeUnit.SECONDS)) {
+        if (!client1.waitForTermination(WAIT_TIMEOUT_1)) {
             client1.shutdown();
-            client1.waitForTermination(5, TimeUnit.SECONDS);
+            client1.waitForTermination(WAIT_TIMEOUT_2);
         }
 
         receivedMessages.sort(Comparator.comparing(message -> message.getHeader().getMessageId()));

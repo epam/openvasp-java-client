@@ -144,11 +144,15 @@ abstract class AbstractSession implements Session, TopicListener {
     }
 
     @Override
-    public Optional<VaspMessage> waitForNewMessage(final long timeout, @NonNull final TimeUnit unit) {
+    @SuppressWarnings("unchecked")
+    public <T extends VaspMessage> Optional<T> waitForNewMessage(
+            @NonNull final Class<T> messageClass,
+            final long timeout) {
+
         incomingMessagesLock.lock();
         try {
-            newMessageCondition.await(timeout, unit);
-            return Optional.of(incomingMessages.get(incomingMessages.size() - 1));
+            newMessageCondition.await(timeout, TimeUnit.MILLISECONDS);
+            return Optional.of((T) incomingMessages.get(incomingMessages.size() - 1));
         } catch (InterruptedException ex) {
             return Optional.empty();
         } finally {

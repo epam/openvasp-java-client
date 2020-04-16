@@ -23,7 +23,6 @@ import org.openvasp.client.session.Session;
 import org.openvasp.client.session.VaspInstance;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
 /**
@@ -69,8 +68,8 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     }
 
     @Override
-    public boolean waitForTermination(final long timeout, @NonNull final TimeUnit unit) {
-        return getMessageService().waitForTermination(timeout, unit);
+    public boolean waitForTermination(final long msTimeout) {
+        return getMessageService().waitForTermination(msTimeout);
     }
 
     @Override
@@ -121,10 +120,9 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     @Override
     public Optional<BeneficiarySession> waitForBeneficiarySession(
             @NonNull final String sessionId,
-            final long timeout,
-            @NonNull final TimeUnit unit) {
+            final long msTimeout) {
 
-        return getVaspInstance().waitForBeneficiarySession(sessionId, timeout, unit);
+        return getVaspInstance().waitForBeneficiarySession(sessionId, msTimeout);
     }
 
     @Override
@@ -138,8 +136,8 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     }
 
     @Override
-    public boolean waitForNoActiveSessions(final long timeout, @NonNull final TimeUnit unit) {
-        return getVaspInstance().waitForNoActiveSessions(timeout, unit);
+    public boolean waitForNoActiveSessions(final long msTimeout) {
+        return getVaspInstance().waitForNoActiveSessions(msTimeout);
     }
 
     @VisibleForTesting
@@ -165,10 +163,6 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     @VisibleForTesting
     ContractService getContractService() {
         return injector.getInstance(ContractService.class);
-    }
-
-    private MessageService getMessageServiceBean() {
-        return injector.getInstance(MessageService.class);
     }
 
 }

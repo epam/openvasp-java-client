@@ -1,16 +1,15 @@
 package org.openvasp.client.service.impl;
 
+import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.api.whisper.WhisperApi;
 import org.openvasp.client.api.whisper.WhisperIOException;
 import org.openvasp.client.api.whisper.model.ShhMessage;
 import org.openvasp.client.api.whisper.model.ShhNewMessageFilterRequest;
 import org.openvasp.client.api.whisper.model.ShhPostRequest;
-import org.openvasp.client.common.Json;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
@@ -34,9 +33,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.stream.Collectors.toList;
-import static org.openvasp.client.common.Constants.SIGNATURE_LENGTH;
-import static org.openvasp.client.common.VaspUtils.hexStrDecode;
-import static org.openvasp.client.common.VaspUtils.hexStrEncode;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -57,7 +53,6 @@ public final class MessageServiceImpl implements MessageService {
 
     private final WhisperApi whisper;
     private final SignService signService;
-    private final ContractService contractService;
 
     private final VaspCode senderVaspCode;
     private final String senderSigningPrivateKey;
@@ -74,12 +69,10 @@ public final class MessageServiceImpl implements MessageService {
     public MessageServiceImpl(
             final VaspConfig vaspConfig,
             final WhisperApi whisper,
-            final SignService signService,
-            final ContractService contractService) {
+            final SignService signService) {
 
         this.whisper = whisper;
         this.signService = signService;
-        this.contractService = contractService;
 
         this.senderVaspCode = vaspConfig.getVaspCode();
         this.senderSigningPrivateKey = vaspConfig.getSigningPrivateKey();
@@ -111,10 +104,10 @@ public final class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public boolean waitForTermination(final long timeout, @NonNull final TimeUnit unit) {
+    public boolean waitForTermination(final long msTimeout) {
         stateCtl.lock();
         try {
-            termination.await(timeout, unit);
+            termination.await(msTimeout, TimeUnit.MILLISECONDS);
             return true;
         } catch (InterruptedException ex) {
             return false;
@@ -137,9 +130,7 @@ public final class MessageServiceImpl implements MessageService {
                 listenerRecord = new TopicListenerRecord(topic, encType, key);
                 listenerRecords.put(topic, listenerRecord);
             }
-            if (!listenerRecord.listeners.contains(listener)) {
-                listenerRecord.listeners.add(listener);
-            }
+            listenerRecord.addTopicListener(listener);
         } finally {
             listenerRecordsLock.unlock();
         }
@@ -151,8 +142,8 @@ public final class MessageServiceImpl implements MessageService {
         try {
             val listenerRecord = listenerRecords.get(topic);
             if (listenerRecord != null) {
-                listenerRecord.listeners.remove(listener);
-                if (listenerRecord.listeners.isEmpty()) {
+                listenerRecord.removeTopicListener(listener);
+                if (listenerRecord.isEmpty()) {
                     listenerRecords.remove(topic);
                     listenerRecord.close();
                 }
@@ -220,10 +211,7 @@ public final class MessageServiceImpl implements MessageService {
             message.setVaspInfo(new VaspInfo());
         }
         message.getVaspInfo().setVaspCode(senderVaspCode);
-
-        val json = Json.toJson(message);
-        val signature = signService.signPayload(json, senderSigningPrivateKey);
-        return hexStrEncode(json + signature, true);
+        return signService.makeSignedPayload(message, senderSigningPrivateKey);
     }
 
     private void topicPollingLoop() {
@@ -244,6 +232,7 @@ public final class MessageServiceImpl implements MessageService {
             log.error("Error in MessageServicePollingLoop", ex);
         } finally {
             setState(TERMINATED);
+            log.debug("{} terminated", Thread.currentThread().getName());
         }
     }
 
@@ -271,35 +260,11 @@ public final class MessageServiceImpl implements MessageService {
             return;
         }
 
-        val payload = hexStrDecode(whisperMessage.getPayload());
-        val json = StringUtils.left(payload, payload.length() - SIGNATURE_LENGTH);
-        val signature = StringUtils.right(payload, SIGNATURE_LENGTH);
-
-        val vaspMessage = VaspMessage.fromJson(json);
-        val senderVaspCode = vaspMessage.getVaspInfo().getVaspCode();
-        val senderContract = contractService.getVaspContractInfo(senderVaspCode);
-        val publicSigningKey = senderContract.getSigningKey();
-
-        if (validateIncomingMessage(vaspMessage, listenerRecord)) {
-            if (!signService.verifySign(json, signature, publicSigningKey)) {
-                val ex = new VaspException("Invalid signature for incoming message at topic %s", topic);
-                listenerRecord.onError(new TopicErrorEvent(listenerRecord.topic, ex));
-            }
-
-            listenerRecord.onReceiveMessage(new TopicEvent(topic, vaspMessage));
-        }
-    }
-
-    private boolean validateIncomingMessage(
-            @NonNull final VaspMessage vaspMessage,
-            @NonNull final TopicListenerRecord listenerRecord) {
-
         try {
-            vaspMessage.validate();
-            return true;
+            val vaspMessage = signService.extractSignedMessage(whisperMessage.getPayload());
+            listenerRecord.onReceiveMessage(new TopicEvent(topic, vaspMessage));
         } catch (VaspValidationException ex) {
             listenerRecord.onError(new TopicErrorEvent(listenerRecord.topic, ex));
-            return false;
         }
     }
 
@@ -350,7 +315,7 @@ public final class MessageServiceImpl implements MessageService {
         final String key;
         String keyId;
         String filterId;
-        final List<TopicListener> listeners = Collections.synchronizedList(new ArrayList<>());
+        private final List<TopicListener> topicListeners = new ArrayList<>();
 
         TopicListenerRecord(
                 @NonNull final Topic topic,
@@ -409,17 +374,31 @@ public final class MessageServiceImpl implements MessageService {
         }
 
         @Override
-        public void onReceiveMessage(@NonNull final TopicEvent event) {
-            for (val listener : listeners) {
+        public synchronized void onReceiveMessage(@NonNull final TopicEvent event) {
+            for (val listener : Lists.newArrayList(topicListeners)) {
                 listener.onReceiveMessage(event);
             }
         }
 
         @Override
-        public void onError(@NonNull final TopicErrorEvent event) {
-            for (val listener : listeners) {
+        public synchronized void onError(@NonNull final TopicErrorEvent event) {
+            for (val listener : Lists.newArrayList(topicListeners)) {
                 listener.onError(event);
             }
+        }
+
+        synchronized void addTopicListener(@NonNull final TopicListener topicListener) {
+            if (!topicListeners.contains(topicListener)) {
+                topicListeners.add(topicListener);
+            }
+        }
+
+        synchronized void removeTopicListener(@NonNull final TopicListener topicListener) {
+            topicListeners.remove(topicListener);
+        }
+
+        synchronized boolean isEmpty() {
+            return topicListeners.isEmpty();
         }
 
     }
