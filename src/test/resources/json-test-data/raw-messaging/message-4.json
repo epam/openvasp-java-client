@@ -1,0 +1,28 @@
+{
+  "msg": {
+    "type": "250",
+    "msgid": "1f1e7808-f636-42ff-8b77-be62439a494f",
+    "session": "ae2f42ca-90fa-4717-b0af-2c9192caa196",
+    "code": "1"
+  },
+  "originator": {
+    "name": "Originator-1",
+    "vaan": "7dface6100000000000001a7",
+    "bic": "PBANUA2XDZF"
+  },
+  "beneficiary": {
+    "name": "Beneficiary-1",
+    "vaan": "bbb4ee5c00000000000005be"
+  },
+  "transfer": {
+    "va": "ETH",
+    "ttype": "1",
+    "amount": 101,
+    "destination": "DADDR01"
+  },
+  "vasp": {
+    "name": "VASP-1",
+    "id": "7dface61"
+  },
+  "comment": "TRANSFER_REPLY"
+}

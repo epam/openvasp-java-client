@@ -1,0 +1,14 @@
+{
+  "msg": {
+    "type": "910",
+    "msgid": "1f1e7808-f636-42ff-8b77-be62439a494f",
+    "session": "ae2f42ca-90fa-4717-b0af-2c9192caa196",
+    "code": "1"
+  },
+  "vasp": {
+    "name": "VASP-1",
+    "id": "7dface61"
+  },
+  "comment": "TERMINATION",
+  "unknown": 100
+}

@@ -1,0 +1,10 @@
+{
+  "httpServiceUrl": "${whisper.node-2.url}",
+  "vaspCode": "bbb4ee5c",
+  "handshakePrivateKey": "0x454468dc29b08c4695b212a3b6e755ee4de22d5da07d9a1af109d53f6fadc911",
+  "signingPrivateKey": "0x91095fb0f2e39001d3895322e920c679246ed2180f66f0a31f8a6468f26d1056",
+  "vaspInfo": {
+    "name": "VASP-2",
+    "id": "bbb4ee5c"
+  }
+}

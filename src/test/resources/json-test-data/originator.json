@@ -1,0 +1,25 @@
+{
+  "name": "John Smith",
+  "vaan": "a0b1c2d3a0b1c2d3e4f5ffa4",
+  "address": {
+    "street": "Kappelergasse",
+    "number": "1",
+    "adrline": "Fraumunsterpost",
+    "postcode": "8022",
+    "town": "Zurich",
+    "country": "CH"
+  },
+  "birth": {
+    "birthdate": "1995-01-02",
+    "birthcity": "Zurich",
+    "birthcountry": "CH"
+  },
+  "nat": [
+    {
+      "natid": "756.1234.5678.90",
+      "natid_type": 2,
+      "natid_country": "CH",
+      "natid_issuer": "Federal Department of Justice and Police"
+    }
+  ]
+}

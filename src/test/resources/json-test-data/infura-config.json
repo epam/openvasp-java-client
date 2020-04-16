@@ -1,0 +1,4 @@
+{
+  "endpoint": "${infura.ropsten.endpoint}",
+  "secret": "${infura.ropsten.secret}"
+}

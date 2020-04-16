@@ -1,0 +1,22 @@
+{
+  "originator": {
+    "name": "Originator-1",
+    "vaan": "7dface6100000000000001a7",
+    "bic": "PBANUA2XDZF"
+  },
+  "beneficiary": {
+    "name": "Beneficiary-1",
+    "vaan": "bbb4ee5c00000000000005be"
+  },
+  "transfer": {
+    "va": "ETH",
+    "ttype": "1",
+    "amount": 101,
+    "destination": "DADDR01"
+  },
+  "tx": {
+    "txid": "TX01",
+    "datetime": "2020-04-02T10:00:00",
+    "sendingadr": "SADDR01"
+  }
+}

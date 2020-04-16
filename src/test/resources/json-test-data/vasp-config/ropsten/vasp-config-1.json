@@ -1,0 +1,11 @@
+{
+  "whisperNodeUrl": "${whisper.node-1.url}",
+  "contractNodeUrl": "${infura.ropsten.endpoint}",
+  "vaspCode": "7dface61",
+  "handshakePrivateKey": "0xe7578145d518e5272d660ccfdeceedf2d55b90867f2b7a6e54dc726662aebac2",
+  "signingPrivateKey": "0x790a3437381e0ca44a71123d56dc64a6209542ddd58e5a56ecdb13134e86f7c6",
+  "vaspInfo": {
+    "name": "VASP-1",
+    "id": "7dface61"
+  }
+}

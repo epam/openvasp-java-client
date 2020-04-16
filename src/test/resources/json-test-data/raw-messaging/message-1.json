@@ -1,0 +1,17 @@
+{
+  "msg": {
+    "type": "110",
+    "msgid": "1f1e7808-f636-42ff-8b77-be62439a494f",
+    "session": "ae2f42ca-90fa-4717-b0af-2c9192caa196",
+    "code": "1"
+  },
+  "handshake": {
+    "topica": "0x12345678",
+    "ecdhpk": "0x044ffeb548a05b879757dc37911bb41f95966311b00b8687da8913c6b0bf7deddd1c233d8294e0c31f0099058bf056c0f5fb8919e87bf148b0f04ace8f19004bb9"
+  },
+  "vasp": {
+    "name": "VASP-1",
+    "id": "7dface61"
+  },
+  "comment": "SESSION_REQUEST"
+}
