@@ -109,7 +109,9 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
                     beneficiarySession.sharedSecret(),
                     beneficiarySession);
 
-            customMessageHandler.accept(sessionRequest, beneficiarySession);
+            if (customMessageHandler != null) {
+                customMessageHandler.accept(sessionRequest, beneficiarySession);
+            }
         }
     }
 
@@ -123,12 +125,11 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
     @Override
     public Optional<BeneficiarySession> waitForBeneficiarySession(
             @NonNull final String sessionId,
-            final long timeout,
-            @NonNull final TimeUnit unit) {
+            final long msTimeout) {
 
         sessionsLock.lock();
         try {
-            newBeneficiarySessionsCondition.await(timeout, unit);
+            newBeneficiarySessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
             return getBeneficiarySession(sessionId);
         } catch (InterruptedException ex) {
             return Optional.empty();
@@ -138,10 +139,10 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
     }
 
     @Override
-    public boolean waitForNoActiveSessions(final long timeout, @NonNull final TimeUnit unit) {
+    public boolean waitForNoActiveSessions(final long msTimeout) {
         sessionsLock.lock();
         try {
-            noActiveSessionsCondition.await(timeout, unit);
+            noActiveSessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
             return true;
         } catch (InterruptedException ex) {
             return false;
@@ -173,6 +174,7 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
         sessionsLock.lock();
         try {
             originatorSessions.remove(originatorSession.sessionId());
+            messageService.removeTopicListener(originatorSession.incomingMessageTopic(), originatorSession);
             if (originatorSessions.isEmpty() && beneficiarySessions.isEmpty()) {
                 noActiveSessionsCondition.signalAll();
             }
@@ -185,6 +187,7 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
         sessionsLock.lock();
         try {
             beneficiarySessions.remove(beneficiarySession.sessionId());
+            messageService.removeTopicListener(beneficiarySession.incomingMessageTopic(), beneficiarySession);
             if (originatorSessions.isEmpty() && beneficiarySessions.isEmpty()) {
                 noActiveSessionsCondition.signalAll();
             }

@@ -5,6 +5,4 @@ package org.openvasp.client.common;
  */
 public interface Constants {
 
-    int SIGNATURE_LENGTH = 130;
-
 }

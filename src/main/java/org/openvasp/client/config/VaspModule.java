@@ -85,15 +85,11 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         bind(WhisperApi.class).to(WhisperApiImpl.class);
         bind(WhisperAsyncApi.class).to(WhisperApiImpl.class);
 
-        bindSignService();
         bindEnsService();
         bindContractService();
+        bindSignService();
         bind(MessageService.class).to(MessageServiceImpl.class);
         bind(VaspInstance.class).to(VaspInstanceImpl.class);
-    }
-
-    protected void bindSignService() {
-        bind(SignService.class).to(SignServiceImpl.class);
     }
 
     protected void bindEnsService() {
@@ -102,6 +98,10 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
 
     protected void bindContractService() {
         bind(ContractService.class).to(ContractServiceImpl.class);
+    }
+
+    protected void bindSignService() {
+        bind(SignService.class).to(SignServiceImpl.class);
     }
 
 }

@@ -62,4 +62,7 @@ public interface TestConstants {
             "1cd48daa0000000000000c33"
     };
 
+    long WAIT_TIMEOUT_1 = 20000;
+    long WAIT_TIMEOUT_2 = 5000;
+
 }
