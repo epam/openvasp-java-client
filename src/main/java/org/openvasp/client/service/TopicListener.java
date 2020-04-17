@@ -11,6 +11,7 @@ public interface TopicListener extends EventListener {
     void onReceiveMessage(TopicEvent event);
 
     default void onError(TopicErrorEvent event) {
+        throw event.getCause();
     }
 
 }

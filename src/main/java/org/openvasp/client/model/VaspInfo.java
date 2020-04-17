@@ -43,4 +43,8 @@ public final class VaspInfo {
     @JsonProperty("bic")
     private String bic;
 
+    public void validate(VaspMessage source) {
+        address.validate(source);
+        VaspMessage.checkRules(source, birth, nat, jur, bic);
+    }
 }

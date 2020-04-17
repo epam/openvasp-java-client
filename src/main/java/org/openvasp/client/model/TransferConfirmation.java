@@ -18,4 +18,10 @@ public final class TransferConfirmation extends TransferMessage {
         getHeader().setMessageType(TypeDescriptor.TRANSFER_CONFIRMATION);
     }
 
+    @Override
+    public void validate() {
+        super.validate();
+        validateNotNull(tx, "tx");
+        validateNotNull(tx.getDateTime(), "tx.datetime");
+    }
 }

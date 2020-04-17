@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 import org.bouncycastle.util.BigIntegers;
+import org.openvasp.client.common.VaspUtils;
 
 import java.security.SecureRandom;
 
@@ -27,7 +28,7 @@ public final class Topic {
 
     @JsonCreator
     public Topic(@NonNull final String data) {
-        checkArgument(data.length() == 10, TOPIC_FORMAT_ERROR);
+        checkArgument(data.length() == 10 && VaspUtils.isValidHex(data), TOPIC_FORMAT_ERROR);
         this.data = data;
     }
 

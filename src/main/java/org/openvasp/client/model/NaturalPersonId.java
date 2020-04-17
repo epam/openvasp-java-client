@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
+import org.openvasp.client.common.VaspValidationException;
 
 import java.util.NoSuchElementException;
 
@@ -29,6 +30,12 @@ public final class NaturalPersonId {
 
     @JsonProperty("natid_issuer")
     private String natIdIssuer;
+
+    public void validate(VaspMessage source) {
+        // whitepaper sections 7.10.1 and 7.11.1, rule 5)
+        if(null==natIdCountry && (null==natIdIssuer || natIdIssuer.isEmpty()) )
+            throw new VaspValidationException(source, "Either [natid_country] or [natid_issuer] or both must be present");
+    }
 
     public enum NatIdType {
 

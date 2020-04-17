@@ -47,6 +47,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
             response.setOriginator(session.transferInfo().getOriginator());
             response.setBeneficiary(session.transferInfo().getBeneficiary());
             response.setTransfer(session.transferInfo().getTransfer());
+            response.setTx(session.transferInfo().getTx());
             onTransferReply((TransferReply) message, response, session);
         }
 

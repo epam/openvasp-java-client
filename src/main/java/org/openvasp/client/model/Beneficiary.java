@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import org.openvasp.client.common.VaspValidationException;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -31,4 +32,8 @@ public final class Beneficiary {
         this.vaan = vaan;
     }
 
+    public void validate(VaspMessage source) {
+        if (null == name || name.isEmpty())
+            throw new VaspValidationException(source, "Beneficiary name must be present");
+    }
 }

@@ -40,6 +40,8 @@ final class AccountTransferHandler
         val beneficiaryVaan = request.getBeneficiary().getVaan();
         val beneficiaryAccount = accountService.getAccount(beneficiaryVaan);
         response.getTransfer().setDestinationAddress(beneficiaryAccount);
+        response.setTx(new Transaction());
+        response.getTx().setDateTime(LocalDateTime.now());
         super.onTransferReply(request, response, session);
     }
 

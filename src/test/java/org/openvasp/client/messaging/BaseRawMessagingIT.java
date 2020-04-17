@@ -11,7 +11,9 @@ import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.web3j.utils.Numeric;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -48,7 +50,7 @@ public abstract class BaseRawMessagingIT {
 
         for (int i = 0; i < messages.size(); i++) {
             val header = messages.get(i).getHeader();
-            header.setMessageId(String.valueOf(i));
+            header.setMessageId(Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(i), header.MSG_ID_LENGTH));
         }
     }
 

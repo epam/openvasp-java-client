@@ -9,15 +9,18 @@ import org.junit.jupiter.api.Test;
 import org.openvasp.client.VaspClient;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
+import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.openvasp.client.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,8 +71,12 @@ public abstract class BaseRecordingTransferIT {
     public void checkCallbackStyleTransfer() {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
         val messageHandler = new RecordingTestHandler(transferLog);
+        final BiConsumer<VaspException, Session> errorLogger =
+                (exception, session) -> { log.error("Error while executing scenario: ", exception); };
         client1.setCustomMessageHandler(messageHandler);
+        client1.setCustomErrorHandler(errorLogger);
         client2.setCustomMessageHandler(messageHandler);
+        client2.setCustomErrorHandler(errorLogger);
 
         // Initiate transfer client1 => client2
         val originatorSessionA = client1.createOriginatorSession(transferA);
@@ -157,6 +164,8 @@ public abstract class BaseRecordingTransferIT {
                     response.setOriginator(session.transferInfo().getOriginator());
                     response.setBeneficiary(session.transferInfo().getBeneficiary());
                     response.setTransfer(session.transferInfo().getTransfer());
+                    response.setTx(new TransferMessage.Transaction());
+                    response.getTx().setDateTime(LocalDateTime.now());
                     return response;
                 });
 

@@ -6,6 +6,15 @@
   "signingPrivateKey": "0x6854a4e4f8945d9fa215646a820fe9a866b5635ffc7cfdac29711541f7b913f9",
   "vaspInfo": {
     "name": "VASP-2",
-    "id": "bbb4ee5c"
+    "id": "bbb4ee5c",
+    "pk": "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
+    "address": {
+        "street": "Vaspstreet",
+        "number": "2",
+        "adrline": "Building 2",
+        "postcode": "22222",
+        "town": "Vaspville",
+        "country": "CH"
+    }
   }
 }

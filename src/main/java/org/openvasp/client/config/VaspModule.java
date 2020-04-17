@@ -42,6 +42,7 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         checkNotNull(vaspConfig.getVaspCode());
         checkNotNull(vaspConfig.getVaspInfo());
         checkNotNull(vaspConfig.getVaspInfo().getVaspCode());
+        checkNotNull(vaspConfig.getVaspInfo().getPk());
         checkArgument(vaspConfig.getVaspCode().equals(vaspConfig.getVaspInfo().getVaspCode()));
 
         this.vaspConfig = vaspConfig;

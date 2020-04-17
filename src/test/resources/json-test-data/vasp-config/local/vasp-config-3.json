@@ -5,6 +5,15 @@
   "signingPrivateKey": "0x179ec874d9225a5efd8523e295572341b483a340f171e5e34ceced0677a243c4",
   "vaspInfo": {
     "name": "VASP-3",
-    "id": "1cd48daa"
+    "id": "1cd48daa",
+    "pk": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    "address": {
+        "street": "Vaspstrasse",
+        "number": "3",
+        "adrline": "Building 3",
+        "postcode": "33333",
+        "town": "Vaspburg",
+        "country": "DE"
+    }
   }
 }

@@ -18,4 +18,10 @@ public final class TransferDispatch extends TransferMessage {
         getHeader().setMessageType(TypeDescriptor.TRANSFER_DISPATCH);
     }
 
+    @Override
+    public void validate() {
+        super.validate();
+        validateNotNull(tx, "tx");
+        validateNotNull(tx.getDateTime(), "tx.datetime");
+    }
 }

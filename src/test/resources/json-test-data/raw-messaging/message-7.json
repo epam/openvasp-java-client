@@ -7,7 +7,16 @@
   },
   "vasp": {
     "name": "VASP-1",
-    "id": "7dface61"
+    "id": "7dface61",
+    "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "address": {
+        "street": "Kappelergasse",
+        "number": "1",
+        "adrline": "Fraumunsterpost",
+        "postcode": "8022",
+        "town": "Zurich",
+        "country": "CH"
+    }
   },
   "comment": "TERMINATION",
   "unknown": 100

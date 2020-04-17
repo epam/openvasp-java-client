@@ -5,6 +5,15 @@
   "signingPrivateKey": "0x291ca864fe733a1dc128b642a2191a532eaad158c80ab5667dc23402836c00ec",
   "vaspInfo": {
     "name": "VASP-1",
-    "id": "7dface61"
+    "id": "7dface61",
+    "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "address": {
+        "street": "Vaspstreet",
+        "number": "1",
+        "adrline": "Building 1",
+        "postcode": "11111",
+        "town": "Vasptown",
+        "country": "US"
+    }
   }
 }

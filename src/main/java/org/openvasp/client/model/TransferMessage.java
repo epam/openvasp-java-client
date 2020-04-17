@@ -30,9 +30,14 @@ public abstract class TransferMessage extends VaspMessage {
         super.validate();
         validateNotNull(originator, "originator");
         validateNotNull(originator.getVaan(), "originator.vaan");
+        originator.validate(this);
         validateNotNull(beneficiary, "beneficiary");
         validateNotNull(beneficiary.getVaan(), "beneficiary.vaan");
+        beneficiary.validate(this);
         validateNotNull(transfer, "transfer");
+        validateNotNull(transfer.getAssetType(), "transfer.va");
+        validateNotNull(transfer.getTransferType(), "transfer.ttype");
+        validateNotNull(transfer.getAmount(), "transfer.amount");
     }
 
     @Getter
