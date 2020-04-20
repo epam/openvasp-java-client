@@ -58,4 +58,10 @@ public interface Session {
 
     void remove();
 
+    Object getAttr(String key);
+
+    Object putAttr(String key, Object value);
+
+    Object removeAttr(String key);
+
 }

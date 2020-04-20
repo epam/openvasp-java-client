@@ -5,15 +5,15 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.openvasp.client.VaspClient;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
-import org.openvasp.client.config.LocalTestModule;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.openvasp.client.session.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,12 +28,13 @@ import static org.openvasp.client.model.VaspResponseCode.OK;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-@Tag("transfer")
-public class RecordingTransferIT {
+public abstract class BaseRecordingTransferIT {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     final VaspModule
-            module1 = LocalTestModule.module1,
-            module2 = LocalTestModule.module2;
+            module1,
+            module2;
 
     VaspClient
             client1,
@@ -43,8 +44,12 @@ public class RecordingTransferIT {
             transferA = Json.loadTestJson(TransferInfo.class, "transfer/recording/transfer-info-a.json"),
             transferB = Json.loadTestJson(TransferInfo.class, "transfer/recording/transfer-info-b.json");
 
-    public RecordingTransferIT() {
+    public BaseRecordingTransferIT(
+            @NonNull final VaspModule module1,
+            @NonNull final VaspModule module2) {
 
+        this.module1 = module1;
+        this.module2 = module2;
     }
 
     @BeforeEach
@@ -60,7 +65,6 @@ public class RecordingTransferIT {
         client2.close();
     }
 
-    @Test
     public void checkCallbackStyleTransfer() {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
         val messageHandler = new RecordingTestHandler(transferLog);

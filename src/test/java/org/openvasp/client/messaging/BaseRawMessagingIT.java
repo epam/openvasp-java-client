@@ -1,10 +1,12 @@
-package org.openvasp.client;
+package org.openvasp.client.messaging;
 
 import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.openvasp.client.VaspClient;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.slf4j.Logger;
@@ -30,7 +32,7 @@ public abstract class BaseRawMessagingIT {
 
     VaspClient client1, client2;
 
-    public BaseRawMessagingIT(final VaspModule module1, final VaspModule module2) {
+    public BaseRawMessagingIT(@NonNull final VaspModule module1, @NonNull final VaspModule module2) {
         this.module1 = module1;
         this.module2 = module2;
 
@@ -57,7 +59,7 @@ public abstract class BaseRawMessagingIT {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDown() {
         client1.close();
         client1 = null;
         client2.close();
@@ -83,7 +85,7 @@ public abstract class BaseRawMessagingIT {
                 }
         );
 
-        val contract1 = client2.getContractService().getVaspContractInfo(CONTRACT_ADDRESS_1);
+        val contract1 = client2.getVaspContractInfo(CONTRACT_ADDRESS_1);
         for (val message : messages) {
             client2.send(
                     module1.getVaspCode().toTopic(),
@@ -107,9 +109,8 @@ public abstract class BaseRawMessagingIT {
     public void checkSymmetricSendAndReceive() {
         log.debug("check symmetric sending and receiving");
 
-        val whisper = client1.getWhisperApi();
-        val keyId = whisper.generateSymKeyFromPassword("Hello,World!");
-        val symKey = whisper.getSymKey(keyId);
+        val keyId = client1.generateSymKeyFromPassword("Hello,World!");
+        val symKey = client1.getSymKey(keyId);
 
         val receivedMessages = new ArrayList<VaspMessage>();
 

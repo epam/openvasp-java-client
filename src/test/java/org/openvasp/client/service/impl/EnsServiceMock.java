@@ -1,6 +1,7 @@
 package org.openvasp.client.service.impl;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.service.EnsService;
 
@@ -26,7 +27,7 @@ public final class EnsServiceMock implements EnsService {
     }
 
     @Override
-    public String resolveContractAddress(String contractId) {
+    public String resolveContractAddress(@NonNull final String contractId) {
         if (!ensMap.containsKey(contractId)) {
             throw new VaspException("Contract for the VASP code '%s' was not found", contractId);
         }

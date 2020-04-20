@@ -4,6 +4,9 @@ import lombok.NonNull;
 import lombok.val;
 import org.bouncycastle.util.encoders.Hex;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 /**
@@ -11,15 +14,23 @@ import java.util.UUID;
  */
 public final class VaspUtils {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    static {
+        SECURE_RANDOM.setSeed(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+    }
+
     private VaspUtils() {
     }
 
     public static String newSessionId() {
-        return UUID.randomUUID().toString();
+        return newMessageId();
     }
 
     public static String newMessageId() {
-        return UUID.randomUUID().toString();
+        byte[] result = new byte[16];
+        SECURE_RANDOM.nextBytes(result);
+        return toHex(result, true);
     }
 
     public static String toHex(@NonNull final byte[] bytes, final boolean prefix) {

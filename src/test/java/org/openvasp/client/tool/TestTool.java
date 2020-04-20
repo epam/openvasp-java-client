@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
+import org.openvasp.client.common.VaspUtils;
 import org.openvasp.client.crypto.ECDHKeyPair;
 import org.openvasp.client.crypto.X25519KeyPair;
 import org.openvasp.client.model.Vaan;
@@ -108,7 +109,9 @@ public final class TestTool {
     }
 
     public static void main(String[] args) throws Exception {
-        generateVaans();
+        for (int i = 0; i < 5; i++) {
+            System.out.println(VaspUtils.newMessageId());
+        }
     }
 
 }

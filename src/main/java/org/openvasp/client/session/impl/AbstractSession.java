@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -45,6 +47,8 @@ abstract class AbstractSession implements Session, TopicListener {
 
     TransferInfo transferInfo;
     VaspInfo peerVaspInfo;
+
+    private final ConcurrentMap<String, Object> attrs = new ConcurrentHashMap<>();
 
     private final List<VaspMessage> incomingMessages = Collections.synchronizedList(new ArrayList<>());
     private final Lock incomingMessagesLock = new ReentrantLock();
@@ -151,13 +155,29 @@ abstract class AbstractSession implements Session, TopicListener {
 
         incomingMessagesLock.lock();
         try {
-            newMessageCondition.await(timeout, TimeUnit.MILLISECONDS);
-            return Optional.of((T) incomingMessages.get(incomingMessages.size() - 1));
+            return newMessageCondition.await(timeout, TimeUnit.MILLISECONDS)
+                    ? Optional.of((T) incomingMessages.get(incomingMessages.size() - 1))
+                    : Optional.empty();
         } catch (InterruptedException ex) {
             return Optional.empty();
         } finally {
             incomingMessagesLock.unlock();
         }
+    }
+
+    @Override
+    public Object getAttr(@NonNull String key) {
+        return attrs.get(key);
+    }
+
+    @Override
+    public Object putAttr(@NonNull String key, @NonNull Object value) {
+        return attrs.put(key, value);
+    }
+
+    @Override
+    public Object removeAttr(@NonNull String key) {
+        return attrs.remove(key);
     }
 
 }

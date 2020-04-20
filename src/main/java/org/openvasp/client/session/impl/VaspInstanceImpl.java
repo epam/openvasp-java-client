@@ -129,8 +129,13 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
 
         sessionsLock.lock();
         try {
-            newBeneficiarySessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
-            return getBeneficiarySession(sessionId);
+            if (beneficiarySessions.containsKey(sessionId)) {
+                return Optional.of(beneficiarySessions.get(sessionId));
+            } else {
+                return newBeneficiarySessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS)
+                        ? getBeneficiarySession(sessionId)
+                        : Optional.empty();
+            }
         } catch (InterruptedException ex) {
             return Optional.empty();
         } finally {
@@ -142,8 +147,8 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
     public boolean waitForNoActiveSessions(final long msTimeout) {
         sessionsLock.lock();
         try {
-            noActiveSessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
-            return true;
+            return originatorSessions.isEmpty() && beneficiarySessions.isEmpty() ||
+                    noActiveSessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             return false;
         } finally {

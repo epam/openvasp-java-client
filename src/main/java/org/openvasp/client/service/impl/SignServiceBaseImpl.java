@@ -15,7 +15,7 @@ import static org.openvasp.client.common.VaspUtils.hexStrEncode;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public abstract class SignServiceBaseImpl implements SignService {
+abstract class SignServiceBaseImpl implements SignService {
 
     private final ContractService contractService;
 

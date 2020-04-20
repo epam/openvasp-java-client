@@ -42,7 +42,7 @@ import static java.util.stream.Collectors.toList;
 public final class MessageServiceImpl implements MessageService {
 
     private static final BigInteger TTL = BigInteger.valueOf(60);
-    private static final BigInteger POW_TIME = BigInteger.valueOf(4);
+    private static final BigInteger POW_TIME = BigInteger.valueOf(8);
     private static final BigDecimal POW_TARGET = BigDecimal.valueOf(2.01);
 
     private static final long POLL_TIMEOUT = 1000;
@@ -107,8 +107,7 @@ public final class MessageServiceImpl implements MessageService {
     public boolean waitForTermination(final long msTimeout) {
         stateCtl.lock();
         try {
-            termination.await(msTimeout, TimeUnit.MILLISECONDS);
-            return true;
+            return state.get() == TERMINATED || termination.await(msTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             return false;
         } finally {

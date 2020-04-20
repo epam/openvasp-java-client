@@ -1,4 +1,4 @@
-package org.openvasp.client;
+package org.openvasp.client.messaging;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

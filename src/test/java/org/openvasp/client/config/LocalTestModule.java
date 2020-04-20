@@ -1,5 +1,6 @@
 package org.openvasp.client.config;
 
+import lombok.NonNull;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.service.ContractService;
 import org.openvasp.client.service.impl.ContractServiceMock;
@@ -21,7 +22,7 @@ public class LocalTestModule extends VaspModule {
         module3 = new LocalTestModule(Json.loadTestJson(VaspConfig.class, VASP_CONFIG_LOCAL_3));
     }
 
-    public LocalTestModule(final VaspConfig vaspConfig) {
+    public LocalTestModule(@NonNull final VaspConfig vaspConfig) {
         super(vaspConfig);
     }
 

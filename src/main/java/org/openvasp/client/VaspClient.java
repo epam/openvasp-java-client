@@ -1,6 +1,5 @@
 package org.openvasp.client;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import lombok.AccessLevel;
@@ -9,14 +8,14 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.openvasp.client.api.whisper.WhisperApi;
+import org.openvasp.client.api.whisper.WhisperSymKeyApi;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.config.VaspModule;
-import org.openvasp.client.model.EncryptionType;
-import org.openvasp.client.model.Topic;
-import org.openvasp.client.model.TransferInfo;
-import org.openvasp.client.model.VaspMessage;
-import org.openvasp.client.service.*;
+import org.openvasp.client.model.*;
+import org.openvasp.client.service.ContractService;
+import org.openvasp.client.service.MessageService;
+import org.openvasp.client.service.TopicListener;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
@@ -29,12 +28,23 @@ import java.util.function.BiConsumer;
  * @author Olexandr_Bilovol@epam.com
  */
 @Slf4j
-public final class VaspClient implements AutoCloseable, MessageService, VaspInstance {
+public final class VaspClient implements
+        AutoCloseable,
+        WhisperSymKeyApi,
+        ContractService,
+        MessageService,
+        VaspInstance {
 
     public static final String VERSION = "0.0.1";
 
     private final VaspModule module;
     private final Injector injector;
+
+    @Getter(value = AccessLevel.PRIVATE, lazy = true)
+    private final WhisperApi whisperApi = injector.getInstance(WhisperApi.class);
+
+    @Getter(value = AccessLevel.PRIVATE, lazy = true)
+    private final ContractService contractService = injector.getInstance(ContractService.class);
 
     @Getter(value = AccessLevel.PRIVATE, lazy = true)
     private final MessageService messageService = injector.getInstance(MessageService.class);
@@ -45,6 +55,8 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     public VaspClient(@NonNull final VaspModule module) {
         this.module = module;
         this.injector = Guice.createInjector(module);
+        // Create and start MessageService
+        getMessageService();
     }
 
     public VaspClient(@NonNull final VaspConfig vaspConfig) {
@@ -70,6 +82,46 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     @Override
     public boolean waitForTermination(final long msTimeout) {
         return getMessageService().waitForTermination(msTimeout);
+    }
+
+    @Override
+    public String newSymKey() {
+        return getWhisperApi().newSymKey();
+    }
+
+    @Override
+    public String generateSymKeyFromPassword(String password) {
+        return getWhisperApi().generateSymKeyFromPassword(password);
+    }
+
+    @Override
+    public String addSymKey(String key) {
+        return getWhisperApi().addSymKey(key);
+    }
+
+    @Override
+    public Boolean deleteSymKey(String symKeyId) {
+        return getWhisperApi().deleteSymKey(symKeyId);
+    }
+
+    @Override
+    public Boolean hasSymKey(String symKeyId) {
+        return getWhisperApi().hasSymKey(symKeyId);
+    }
+
+    @Override
+    public String getSymKey(String symKeyId) {
+        return getWhisperApi().getSymKey(symKeyId);
+    }
+
+    @Override
+    public VaspContractInfo getVaspContractInfo(@NonNull final String vaspSmartContractAddress) {
+        return getContractService().getVaspContractInfo(vaspSmartContractAddress);
+    }
+
+    @Override
+    public VaspContractInfo getVaspContractInfo(@NonNull final VaspCode vaspCode) {
+        return getContractService().getVaspContractInfo(vaspCode);
     }
 
     @Override
@@ -138,31 +190,6 @@ public final class VaspClient implements AutoCloseable, MessageService, VaspInst
     @Override
     public boolean waitForNoActiveSessions(final long msTimeout) {
         return getVaspInstance().waitForNoActiveSessions(msTimeout);
-    }
-
-    @VisibleForTesting
-    Injector getInjector() {
-        return injector;
-    }
-
-    @VisibleForTesting
-    WhisperApi getWhisperApi() {
-        return injector.getInstance(WhisperApi.class);
-    }
-
-    @VisibleForTesting
-    SignService getSignService() {
-        return injector.getInstance(SignService.class);
-    }
-
-    @VisibleForTesting
-    EnsService getEnsService() {
-        return injector.getInstance(EnsService.class);
-    }
-
-    @VisibleForTesting
-    ContractService getContractService() {
-        return injector.getInstance(ContractService.class);
     }
 
 }
