@@ -9,10 +9,10 @@ import org.web3j.protocol.core.Response;
 public class WhisperApiError extends RuntimeException {
 
     @Getter
-    private Response.Error error;
+    private final Response.Error error;
 
     @Getter
-    private String rawResponse;
+    private final String rawResponse;
 
     public WhisperApiError(final Response.Error error, final String rawResponse) {
         super(error.getMessage());

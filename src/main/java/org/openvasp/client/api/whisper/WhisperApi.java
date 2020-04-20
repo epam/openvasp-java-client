@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public interface WhisperApi {
+public interface WhisperApi extends WhisperSymKeyApi{
 
     String version();
 
@@ -29,16 +29,22 @@ public interface WhisperApi {
 
     // Sym keys API -----------------------------------------------------------
 
+    @Override
     String newSymKey();
 
+    @Override
     String generateSymKeyFromPassword(String password);
 
+    @Override
     String addSymKey(String key);
 
+    @Override
     Boolean deleteSymKey(String symKeyId);
 
+    @Override
     Boolean hasSymKey(String symKeyId);
 
+    @Override
     String getSymKey(String symKeyId);
 
     // Send/receive messages --------------------------------------------------

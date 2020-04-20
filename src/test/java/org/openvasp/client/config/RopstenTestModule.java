@@ -1,5 +1,6 @@
 package org.openvasp.client.config;
 
+import lombok.NonNull;
 import lombok.val;
 import org.bouncycastle.util.encoders.Base64;
 import org.openvasp.client.common.Json;
@@ -24,7 +25,7 @@ public class RopstenTestModule extends VaspModule {
         module3 = new RopstenTestModule(Json.loadTestJson(VaspConfig.class, VASP_CONFIG_ROPSTEN_3));
     }
 
-    public RopstenTestModule(final VaspConfig vaspConfig) {
+    public RopstenTestModule(@NonNull final VaspConfig vaspConfig) {
         super(vaspConfig);
         val infuraSecret = ":" + infuraConfig.getSecret();
         val auth = Base64.toBase64String(infuraSecret.getBytes());
