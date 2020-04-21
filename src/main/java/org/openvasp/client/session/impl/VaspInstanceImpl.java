@@ -14,6 +14,8 @@ import org.openvasp.client.session.VaspInstance;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -211,6 +213,19 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
     public Optional<BeneficiarySession> getBeneficiarySession(@NonNull final String sessionId) {
         val result = beneficiarySessions.get(sessionId);
         return result == null ? Optional.empty() : Optional.of(result);
+    }
+
+    @Override
+    public List<Session> allSessions() {
+        sessionsLock.lock();
+        try {
+            val result = new ArrayList<Session>();
+            result.addAll(originatorSessions.values());
+            result.addAll(beneficiarySessions.values());
+            return result;
+        } finally {
+            sessionsLock.unlock();
+        }
     }
 
 }

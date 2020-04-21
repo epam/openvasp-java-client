@@ -124,7 +124,7 @@ public final class MessageServiceImpl implements MessageService {
 
         listenerRecordsLock.lock();
         try {
-            var listenerRecord = listenerRecords.get(topic);
+            TopicListenerRecord listenerRecord = listenerRecords.get(topic);
             if (listenerRecord == null) {
                 listenerRecord = new TopicListenerRecord(topic, encType, key);
                 listenerRecords.put(topic, listenerRecord);

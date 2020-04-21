@@ -1,5 +1,6 @@
 package org.openvasp.client.session;
 
+import lombok.NonNull;
 import lombok.val;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.model.TransferInfo;
@@ -30,14 +31,21 @@ public interface Session {
 
     List<VaspMessage> incomingMessages();
 
-    default VaspMessage lastMessage() {
+    default VaspMessage lastIncomingMessage() {
         val incomingMessages = incomingMessages();
         return incomingMessages.get(incomingMessages.size() - 1);
     }
 
     @SuppressWarnings("unchecked")
-    default <T extends VaspMessage> T lastMessage(Class<T> messageClass) {
-        return (T) lastMessage();
+    default <T extends VaspMessage> T lastIncomingMessage(Class<T> messageClass) {
+        return (T) lastIncomingMessage();
+    }
+
+    default Optional<VaspMessage> incomingMessageById(@NonNull final String messageId) {
+        return incomingMessages()
+                .stream()
+                .filter(message -> messageId.equals(message.getHeader().getMessageId()))
+                .findFirst();
     }
 
     List<VaspException> errors();

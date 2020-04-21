@@ -22,8 +22,8 @@
     <properties>
         <!-- Versions -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
         <lombok.version>1.18.12</lombok.version>
         <guava.version>28.2-jre</guava.version>
         <commons-lang3.version>3.9</commons-lang3.version>
@@ -36,13 +36,11 @@
         <jsonassert.version>1.5.0</jsonassert.version>
 
         <!-- Project paramateres -->
-        <!-- You can change the values in the user profile at .m2/settings.xml -->
-        <whisper.node-1.url>http://localhost:8545</whisper.node-1.url>
-        <whisper.node-2.url>http://localhost:8546</whisper.node-2.url>
-        <whisper.node-3.url>http://localhost:8547</whisper.node-3.url>
-        <!-- Look in maven-settings-example.xml for an example -->
-        <infura.ropsten.endpoint></infura.ropsten.endpoint>
-        <infura.ropsten.secret></infura.ropsten.secret>
+        <whisper.node-1.url>${env.WHISPER_NODE_1_URL}</whisper.node-1.url>
+        <whisper.node-2.url>${env.WHISPER_NODE_2_URL}</whisper.node-2.url>
+        <whisper.node-3.url>${env.WHISPER_NODE_3_URL}</whisper.node-3.url>
+        <infura.ropsten.endpoint>${env.INFURA_ROPSTEN_ENDPOINT}</infura.ropsten.endpoint>
+        <infura.ropsten.secret>${env.INFURA_ROPSTEN_SECRET}</infura.ropsten.secret>
     </properties>
 
     <dependencies>
