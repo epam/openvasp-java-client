@@ -72,8 +72,8 @@ public abstract class BaseRecordingTransferIT {
         client2.setCustomMessageHandler(messageHandler);
 
         // Initiate transfer client1 => client2
-        var originatorSession = client1.createOriginatorSession(transferA);
-        originatorSession.startTransfer();
+        val originatorSessionA = client1.createOriginatorSession(transferA);
+        originatorSessionA.startTransfer();
 
         // Wait for the transfer to be completed
         assertThat(client1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
@@ -85,8 +85,8 @@ public abstract class BaseRecordingTransferIT {
         transferLog.clear();
 
         // Initiate transfer client2 => client1
-        originatorSession = client2.createOriginatorSession(transferB);
-        originatorSession.startTransfer();
+        val originatorSessionB = client2.createOriginatorSession(transferB);
+        originatorSessionB.startTransfer();
 
         // Wait for the transfer to be completed
         assertThat(client2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
@@ -100,21 +100,21 @@ public abstract class BaseRecordingTransferIT {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
 
         // Initiate transfer client1 => client2
-        var originatorSession = client1.createOriginatorSession(transferA);
+        val originatorSession = client1.createOriginatorSession(transferA);
         originatorSession.startTransfer();
 
         // Wait for the beneficiary session to be created
-        var beneficiarySessionOpt = client2.waitForBeneficiarySession(originatorSession.sessionId(), WAIT_TIMEOUT_2);
+        val beneficiarySessionOpt = client2.waitForBeneficiarySession(originatorSession.sessionId(), WAIT_TIMEOUT_2);
         assertThat(beneficiarySessionOpt).isNotEmpty();
-        var beneficiarySession = beneficiarySessionOpt.get();
+        val beneficiarySession = beneficiarySessionOpt.get();
 
         // The 1st incoming message
         assertThat(beneficiarySession.incomingMessages()).hasSize(1);
-        assertThat(beneficiarySession.lastMessage()).isInstanceOf(SessionRequest.class);
-        var sessionRequest = beneficiarySession.lastMessage(SessionRequest.class);
+        assertThat(beneficiarySession.lastIncomingMessage()).isInstanceOf(SessionRequest.class);
+        val sessionRequest = beneficiarySession.lastIncomingMessage(SessionRequest.class);
         transferLog.add(new TransferLogRecord(beneficiarySession.vaspCode(), sessionRequest));
         // The 1st response
-        var sessionReply = new SessionReply();
+        val sessionReply = new SessionReply();
         sessionReply.getHeader().setResponseCode(VaspResponseCode.OK.id);
         beneficiarySession.sendMessage(sessionReply);
 
@@ -268,7 +268,7 @@ public abstract class BaseRecordingTransferIT {
         val messageOpt = session.waitForNewMessage(expectedMessageClass, WAIT_TIMEOUT_2);
         assertThat(messageOpt).isNotEmpty();
         assertThat(session.incomingMessages()).hasSize(expectedIncomingMessageCount);
-        assertThat(session.lastMessage()).isInstanceOf(expectedMessageClass);
+        assertThat(session.lastIncomingMessage()).isInstanceOf(expectedMessageClass);
         val message = messageOpt.get();
         transferLog.add(new TransferLogRecord(session.vaspCode(), message));
         val response = responseAction.apply(message, session);

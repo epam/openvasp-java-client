@@ -21,6 +21,7 @@ import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
 import org.openvasp.client.session.VaspInstance;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
@@ -185,6 +186,11 @@ public final class VaspClient implements
     @Override
     public Optional<BeneficiarySession> getBeneficiarySession(@NonNull final String sessionId) {
         return getVaspInstance().getBeneficiarySession(sessionId);
+    }
+
+    @Override
+    public List<Session> allSessions() {
+        return getVaspInstance().allSessions();
     }
 
     @Override

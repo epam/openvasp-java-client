@@ -1,6 +1,5 @@
 package org.openvasp.transfer.account;
 
-import com.google.common.base.MoreObjects;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -55,7 +54,7 @@ final class AccountTransferHandler
         val originatorAccount = accountService.getAccount(originatorVaan);
         accountService.subtract(originatorAccount, amount);
         val txID = accountService.add(request.getTransfer().getDestinationAddress(), amount);
-        var tx = response.getTx();
+        Transaction tx = response.getTx();
         if (tx == null) {
             tx = new Transaction();
         }
