@@ -57,9 +57,9 @@ public class Web3jConnectionIT {
     public void checkRopstenEnsEntries() {
         val web3 = getRopstenConnection();
         EnsResolver ens = new EnsResolver(web3);
-        assertThat(ens.resolve(CONTRACT_ID_1)).isEqualTo(CONTRACT_ADDRESS_1);
-        assertThat(ens.resolve(CONTRACT_ID_2)).isEqualTo(CONTRACT_ADDRESS_2);
-        assertThat(ens.resolve(CONTRACT_ID_3)).isEqualTo(CONTRACT_ADDRESS_3);
+        assertThat(ens.resolve(CONTRACT_ID_1)).isEqualTo(CONTRACT_ADDRESS_1.toString());
+        assertThat(ens.resolve(CONTRACT_ID_2)).isEqualTo(CONTRACT_ADDRESS_2.toString());
+        assertThat(ens.resolve(CONTRACT_ID_3)).isEqualTo(CONTRACT_ADDRESS_3.toString());
     }
 
     private Web3j getRopstenConnection() {

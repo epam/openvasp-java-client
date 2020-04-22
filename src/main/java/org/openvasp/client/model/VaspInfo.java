@@ -1,11 +1,9 @@
 package org.openvasp.client.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -23,7 +21,7 @@ public final class VaspInfo {
     private String name;
 
     @JsonProperty("id")
-    private VaspCode vaspCode;
+    private EthAddr vaspId;
 
     @JsonProperty("pk")
     private String pk;
@@ -43,8 +41,14 @@ public final class VaspInfo {
     @JsonProperty("bic")
     private String bic;
 
-    public void validate(VaspMessage source) {
+    @JsonIgnore
+    public VaspCode getVaspCode() {
+        return vaspId.toVaspCode();
+    }
+
+    public void validate(@NonNull final VaspMessage source) {
         address.validate(source);
         VaspMessage.checkRules(source, birth, nat, jur, bic);
     }
+
 }

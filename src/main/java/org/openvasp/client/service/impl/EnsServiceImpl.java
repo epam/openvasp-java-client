@@ -3,6 +3,7 @@ package org.openvasp.client.service.impl;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.openvasp.client.common.annotation.ContractNode;
+import org.openvasp.client.model.EthAddr;
 import org.openvasp.client.service.EnsService;
 import org.web3j.ens.EnsResolver;
 import org.web3j.protocol.Web3j;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class EnsServiceImpl implements EnsService {
 
     private final EnsResolver ensResolver;
-    private final Map<String, String> cache = new ConcurrentHashMap<>();
+    private final Map<String, EthAddr> cache = new ConcurrentHashMap<>();
 
     @Inject
     public EnsServiceImpl(@ContractNode final Web3j web3j) {
@@ -28,10 +29,10 @@ public final class EnsServiceImpl implements EnsService {
     }
 
     @Override
-    public String resolveContractAddress(@NonNull final String contractId) {
-        String result = cache.get(contractId);
+    public EthAddr resolveContractAddress(@NonNull final String contractId) {
+        EthAddr result = cache.get(contractId);
         if (result == null) {
-            result = ensResolver.resolve(contractId);
+            result = new EthAddr(ensResolver.resolve(contractId));
             cache.putIfAbsent(contractId, result);
         }
         return result;

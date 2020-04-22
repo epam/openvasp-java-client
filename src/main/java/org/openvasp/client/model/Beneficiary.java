@@ -3,10 +3,11 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.VaspValidationException;
 
 /**
@@ -32,8 +33,10 @@ public final class Beneficiary {
         this.vaan = vaan;
     }
 
-    public void validate(VaspMessage source) {
-        if (null == name || name.isEmpty())
+    public void validate(@NonNull final VaspMessage source) {
+        if (StringUtils.isEmpty(name)) {
             throw new VaspValidationException(source, "Beneficiary name must be present");
+        }
     }
+
 }

@@ -3,6 +3,7 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.VaspValidationException;
 
 /**
@@ -34,22 +35,26 @@ public final class PostalAddress {
     @JsonProperty("country")
     private Country country;
 
-    public void validate(VaspMessage source) {
-        if(null==postCode || postCode.isEmpty())
+    public void validate(@NonNull final VaspMessage source) {
+        if (StringUtils.isEmpty(postCode)) {
             throw new VaspValidationException(source, "Post code must be present");
+        }
 
-        if(null==town || town.isEmpty())
+        if (StringUtils.isEmpty(town)) {
             throw new VaspValidationException(source, "Town name must be present");
+        }
 
-        if(null==country)
+        if (country == null) {
             throw new VaspValidationException(source, "Country code must be present");
-        
+        }
+
         // whitepaper sections 7.10.1 and 7.11.1, rule 1)
-        if ( (null == adrline || adrline.isEmpty()) && 
-             (null == street || street.isEmpty() || null == number || number.isEmpty()) ) {
+        if ((null == adrline || adrline.isEmpty()) &&
+                (null == street || street.isEmpty() || null == number || number.isEmpty())) {
+
             throw new VaspValidationException(source,
                     "Postal address rules not met - either [street] and [number] must both be present or [adrline]");
         }
-
     }
+
 }

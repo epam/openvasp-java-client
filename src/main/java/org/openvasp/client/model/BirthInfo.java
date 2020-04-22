@@ -3,7 +3,10 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.VaspValidationException;
 
 import java.time.LocalDate;
@@ -26,14 +29,18 @@ public final class BirthInfo {
     @JsonProperty("birthcountry")
     private Country birthCountry;
 
-    public void validate(VaspMessage source) {
-        if(null==birthDate)
+    public void validate(@NonNull final VaspMessage source) {
+        if (null == birthDate) {
             throw new VaspValidationException(source, "Birth date must be present");
-        
-        if(null==birthCity || birthCity.isEmpty())
+        }
+
+        if (StringUtils.isEmpty(birthCity)) {
             throw new VaspValidationException(source, "Birth city must be present");
-        
-        if(null==birthCountry)
+        }
+
+        if (null == birthCountry) {
             throw new VaspValidationException(source, "Birth country must be present");
+        }
     }
+
 }

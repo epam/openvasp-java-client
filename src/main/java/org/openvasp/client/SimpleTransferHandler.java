@@ -12,10 +12,10 @@ import static org.openvasp.client.model.VaspResponseCode.OK;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
+public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> {
 
     @Override
-    public void accept(@NonNull final VaspMessage message, @NonNull final Session session) {
+    default void accept(@NonNull final VaspMessage message, @NonNull final Session session) {
         if (message instanceof SessionRequest) {
             val response = new SessionReply();
             response.getHeader().setResponseCode(OK.id);
@@ -74,7 +74,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         }
     }
 
-    protected void onSessionRequest(
+    default void onSessionRequest(
             @NonNull SessionRequest request,
             @NonNull SessionReply response,
             @NonNull Session session) {
@@ -82,7 +82,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onSessionReply(
+    default void onSessionReply(
             @NonNull SessionReply request,
             @NonNull TransferRequest response,
             @NonNull Session session) {
@@ -90,7 +90,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onTransferRequest(
+    default void onTransferRequest(
             @NonNull TransferRequest request,
             @NonNull TransferReply response,
             @NonNull Session session) {
@@ -98,7 +98,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onTransferReply(
+    default void onTransferReply(
             @NonNull TransferReply request,
             @NonNull TransferDispatch response,
             @NonNull Session session) {
@@ -106,7 +106,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onTransferDispatch(
+    default void onTransferDispatch(
             @NonNull TransferDispatch request,
             @NonNull TransferConfirmation response,
             @NonNull Session session) {
@@ -114,7 +114,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onTransferConfirmation(
+    default void onTransferConfirmation(
             @NonNull TransferConfirmation request,
             @NonNull TerminationMessage response,
             @NonNull Session session) {
@@ -122,7 +122,7 @@ public class SimpleTransferHandler implements BiConsumer<VaspMessage, Session> {
         session.sendMessage(response);
     }
 
-    protected void onTerminationMessage(
+    default void onTerminationMessage(
             @NonNull TerminationMessage request,
             @NonNull Session session) {
 

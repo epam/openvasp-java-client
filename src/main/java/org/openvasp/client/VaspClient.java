@@ -116,7 +116,7 @@ public final class VaspClient implements
     }
 
     @Override
-    public VaspContractInfo getVaspContractInfo(@NonNull final String vaspSmartContractAddress) {
+    public VaspContractInfo getVaspContractInfo(@NonNull final EthAddr vaspSmartContractAddress) {
         return getContractService().getVaspContractInfo(vaspSmartContractAddress);
     }
 

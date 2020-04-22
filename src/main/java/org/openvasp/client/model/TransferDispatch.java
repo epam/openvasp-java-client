@@ -24,4 +24,5 @@ public final class TransferDispatch extends TransferMessage {
         validateNotNull(tx, "tx");
         validateNotNull(tx.getDateTime(), "tx.datetime");
     }
+
 }

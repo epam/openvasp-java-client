@@ -3,7 +3,9 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.VaspValidationException;
 
 import java.util.List;
@@ -37,16 +39,20 @@ public final class Originator {
     @JsonProperty("bic")
     private String bic;
 
-    public void validate(VaspMessage source) {
-        if(null==name || name.isEmpty())
+    public void validate(@NonNull final VaspMessage source) {
+        if (StringUtils.isEmpty(name)) {
             throw new VaspValidationException(source, "Originator name must be present");
-        
-        if(null==vaan)
+        }
+
+        if (vaan == null) {
             throw new VaspValidationException(source, "Originator VAAN must be present");
-        
-        if(null!=address) 
+        }
+
+        if (address != null) {
             address.validate(source);
-        
+        }
+
         VaspMessage.checkRules(source, birth, nat, jur, bic);
     }
+
 }
