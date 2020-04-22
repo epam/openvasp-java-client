@@ -13,7 +13,10 @@ import org.openvasp.client.api.whisper.model.ShhPostRequest;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
-import org.openvasp.client.model.*;
+import org.openvasp.client.model.EncryptionType;
+import org.openvasp.client.model.Topic;
+import org.openvasp.client.model.VaspInfo;
+import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.service.*;
 
 import javax.inject.Inject;
@@ -54,7 +57,7 @@ public final class MessageServiceImpl implements MessageService {
     private final WhisperApi whisper;
     private final SignService signService;
 
-    private final VaspCode senderVaspCode;
+    private final VaspInfo senderVaspInfo;
     private final String senderSigningPrivateKey;
 
     private final ConcurrentMap<Topic, TopicListenerRecord> listenerRecords = new ConcurrentHashMap<>();
@@ -74,7 +77,7 @@ public final class MessageServiceImpl implements MessageService {
         this.whisper = whisper;
         this.signService = signService;
 
-        this.senderVaspCode = vaspConfig.getVaspCode();
+        this.senderVaspInfo = vaspConfig.getVaspInfo();
         this.senderSigningPrivateKey = vaspConfig.getSigningPrivateKey();
 
         this.pollingThread = new Thread(
@@ -207,9 +210,9 @@ public final class MessageServiceImpl implements MessageService {
 
     private String makePayload(@NonNull final VaspMessage message) {
         if (message.getVaspInfo() == null) {
-            message.setVaspInfo(new VaspInfo());
+            message.setVaspInfo(senderVaspInfo);
         }
-        message.getVaspInfo().setVaspCode(senderVaspCode);
+        message.getVaspInfo().setVaspId(senderVaspInfo.getVaspId());
         return signService.makeSignedPayload(message, senderSigningPrivateKey);
     }
 

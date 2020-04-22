@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.val;
 import org.openvasp.client.common.VaspValidationException;
@@ -31,12 +32,13 @@ public final class JuridicalPersonId {
     @JsonProperty("jurid_issuer")
     private String jurIdIssuer;
 
-    public void validate(VaspMessage source) {
+    public void validate(@NonNull final VaspMessage source) {
         // whitepaper sections 7.10.1 and 7.11.1, rule 6)
-        if(null==jurIdCountry && (null==jurIdIssuer || jurIdIssuer.isEmpty()) )
+        if (null == jurIdCountry && (null == jurIdIssuer || jurIdIssuer.isEmpty())) {
             throw new VaspValidationException(source, "Either [jurid_country] or [jurid_issuer] or both must be present");
+        }
     }
-    
+
     public enum JurIdType {
 
         COUNTRY_IDENTIFICATION_NUMBER(1),

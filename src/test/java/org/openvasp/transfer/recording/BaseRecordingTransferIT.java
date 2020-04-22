@@ -73,6 +73,7 @@ public abstract class BaseRecordingTransferIT {
         val messageHandler = new RecordingTestHandler(transferLog);
         final BiConsumer<VaspException, Session> errorLogger =
                 (exception, session) -> { log.error("Error while executing scenario: ", exception); };
+
         client1.setCustomMessageHandler(messageHandler);
         client1.setCustomErrorHandler(errorLogger);
         client2.setCustomMessageHandler(messageHandler);

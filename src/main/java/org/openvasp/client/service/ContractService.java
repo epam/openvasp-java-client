@@ -1,5 +1,6 @@
 package org.openvasp.client.service;
 
+import org.openvasp.client.model.EthAddr;
 import org.openvasp.client.model.VaspCode;
 import org.openvasp.client.model.VaspContractInfo;
 
@@ -14,7 +15,7 @@ public interface ContractService {
      * @param vaspSmartContractAddress Address of Ethereum smart contract
      * @return VaspContractInfo object containing data about the participant
      */
-    VaspContractInfo getVaspContractInfo(String vaspSmartContractAddress);
+    VaspContractInfo getVaspContractInfo(EthAddr vaspSmartContractAddress);
 
     /**
      * Get information about VASP instance by VASP code.

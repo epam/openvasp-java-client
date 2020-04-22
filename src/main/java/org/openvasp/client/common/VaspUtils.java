@@ -8,7 +8,6 @@ import org.web3j.utils.Numeric;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -70,4 +69,5 @@ public final class VaspUtils {
     public static boolean isValidHex(@NonNull final String str) {
         return HEXADECIMAL_PATTERN.matcher(Numeric.cleanHexPrefix(str)).matches();
     }
+
 }

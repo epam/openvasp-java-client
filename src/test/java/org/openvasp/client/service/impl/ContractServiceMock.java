@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.VaspException;
+import org.openvasp.client.model.EthAddr;
 import org.openvasp.client.model.VaspCode;
 import org.openvasp.client.model.VaspContractInfo;
 import org.openvasp.client.service.ContractService;
@@ -23,7 +23,7 @@ import static org.openvasp.client.common.TestConstants.*;
 @Singleton
 public final class ContractServiceMock implements ContractService {
 
-    private final Map<String, VaspContractInfo> contracts;
+    private final Map<EthAddr, VaspContractInfo> contracts;
     private final Map<VaspCode, VaspContractInfo> ensMap;
 
     public ContractServiceMock() {
@@ -35,7 +35,7 @@ public final class ContractServiceMock implements ContractService {
         assertThat(contract2.getHandshakeKey()).isNotEmpty();
         assertThat(contract3.getHandshakeKey()).isNotEmpty();
 
-        this.contracts = ImmutableMap.<String, VaspContractInfo>builder()
+        this.contracts = ImmutableMap.<EthAddr, VaspContractInfo>builder()
                 .put(CONTRACT_ADDRESS_1, contract1)
                 .put(CONTRACT_ADDRESS_2, contract2)
                 .put(CONTRACT_ADDRESS_3, contract3)
@@ -43,14 +43,14 @@ public final class ContractServiceMock implements ContractService {
 
         val ensMapBuilder = ImmutableMap.<VaspCode, VaspContractInfo>builder();
         for (val entry : contracts.entrySet()) {
-            ensMapBuilder.put(new VaspCode(StringUtils.right(entry.getKey(), 8)), entry.getValue());
+            ensMapBuilder.put(entry.getKey().toVaspCode(), entry.getValue());
         }
         this.ensMap = ensMapBuilder.build();
     }
 
     @Override
     @SneakyThrows
-    public VaspContractInfo getVaspContractInfo(@NonNull final String vaspSmartContracAddress) {
+    public VaspContractInfo getVaspContractInfo(@NonNull final EthAddr vaspSmartContracAddress) {
         if (!contracts.containsKey(vaspSmartContracAddress)) {
             throw new VaspException("Contract with the address '%s' was not found", vaspSmartContracAddress);
         }

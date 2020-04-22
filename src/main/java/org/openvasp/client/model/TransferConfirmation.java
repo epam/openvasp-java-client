@@ -24,4 +24,5 @@ public final class TransferConfirmation extends TransferMessage {
         validateNotNull(tx, "tx");
         validateNotNull(tx.getDateTime(), "tx.datetime");
     }
+
 }

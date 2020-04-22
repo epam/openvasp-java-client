@@ -1,5 +1,6 @@
 package org.openvasp.client.common;
 
+import org.openvasp.client.model.EthAddr;
 import org.openvasp.client.model.Vaan;
 import org.openvasp.client.model.VaspCode;
 
@@ -17,17 +18,17 @@ public interface TestConstants {
      */
 
     // Person smart contract address
-    String CONTRACT_ADDRESS_1 = "0x6befaf0656b953b188a0ee3bf3db03d07dface61";
+    EthAddr CONTRACT_ADDRESS_1 = new EthAddr("0x6befaf0656b953b188a0ee3bf3db03d07dface61");
 
     // Juridical smart contract address
-    String CONTRACT_ADDRESS_2 = "0x08fda931d64b17c3acffb35c1b3902e0bbb4ee5c";
+    EthAddr CONTRACT_ADDRESS_2 = new EthAddr("0x08fda931d64b17c3acffb35c1b3902e0bbb4ee5c");
 
     // Bank smart contract address
-    String CONTRACT_ADDRESS_3 = "0x4dd7e1e2d5640a06ed81f155f171012f1cd48daa";
+    EthAddr CONTRACT_ADDRESS_3 = new EthAddr("0x4dd7e1e2d5640a06ed81f155f171012f1cd48daa");
 
-    VaspCode VASP_CODE_1 = new VaspCode("7dface61");
-    VaspCode VASP_CODE_2 = new VaspCode("bbb4ee5c");
-    VaspCode VASP_CODE_3 = new VaspCode("1cd48daa");
+    VaspCode VASP_CODE_1 = CONTRACT_ADDRESS_1.toVaspCode();
+    VaspCode VASP_CODE_2 = CONTRACT_ADDRESS_2.toVaspCode();
+    VaspCode VASP_CODE_3 = CONTRACT_ADDRESS_3.toVaspCode();
 
     String CONTRACT_ID_1 = "7dface61.eth";
     String CONTRACT_ID_2 = "bbb4ee5c.eth";

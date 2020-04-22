@@ -35,7 +35,7 @@ public abstract class SessionMessage extends VaspMessage {
         //  https://github.com/LykkeBusiness/openvasp-message-samples/issues/1
         //  https://github.com/OpenVASP/openvasp-specification/issues/7
         public static final int ECDHPK_LENGTH = 130;
-        
+
         @JsonProperty("topica")
         private Topic topicA;
 
@@ -46,12 +46,14 @@ public abstract class SessionMessage extends VaspMessage {
         private String sessionPublicKey;
 
         public void validate(VaspMessage source) {
-            if(null!=sessionPublicKey && Numeric.cleanHexPrefix(sessionPublicKey).length()!=ECDHPK_LENGTH)
+            if (null != sessionPublicKey && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH) {
                 throw new VaspValidationException(source,
                         "The field 'ecdhpk' is invalid - must be a hexadecimal string of length %d, but is: %s",
                         ECDHPK_LENGTH,
                         sessionPublicKey);
+            }
         }
+
     }
 
 }

@@ -6,7 +6,7 @@
   "signingPrivateKey": "0x790a3437381e0ca44a71123d56dc64a6209542ddd58e5a56ecdb13134e86f7c6",
   "vaspInfo": {
     "name": "VASP-1",
-    "id": "7dface61",
+    "id": "0x6befaf0656b953b188a0ee3bf3db03d07dface61",
     "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     "address": {
         "street": "Vaspstreet",

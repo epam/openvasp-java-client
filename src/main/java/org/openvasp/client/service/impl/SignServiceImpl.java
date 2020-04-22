@@ -12,14 +12,14 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static org.openvasp.client.model.SessionMessage.Handshake.ECDHPK_LENGTH;
+
 /**
  * @author Jan_Juraszek@epam.com
  * @author Olexandr_Bilovol@epam.com
  */
 @Singleton
 public final class SignServiceImpl extends SignServiceBaseImpl {
-
-    private static final int SIGNATURE_LENGTH = 130;
 
     @Inject
     public SignServiceImpl(final ContractService contractService) {
@@ -28,7 +28,7 @@ public final class SignServiceImpl extends SignServiceBaseImpl {
 
     @Override
     int signatureLength() {
-        return SIGNATURE_LENGTH;
+        return ECDHPK_LENGTH;
     }
 
     /**

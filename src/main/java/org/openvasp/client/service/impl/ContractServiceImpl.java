@@ -7,10 +7,7 @@ import lombok.val;
 import org.bouncycastle.util.encoders.Hex;
 import org.openvasp.client.common.annotation.ContractNode;
 import org.openvasp.client.contract.VASP;
-import org.openvasp.client.model.Country;
-import org.openvasp.client.model.PostalAddress;
-import org.openvasp.client.model.VaspCode;
-import org.openvasp.client.model.VaspContractInfo;
+import org.openvasp.client.model.*;
 import org.openvasp.client.service.ContractService;
 import org.openvasp.client.service.EnsService;
 import org.web3j.crypto.Credentials;
@@ -33,7 +30,7 @@ public final class ContractServiceImpl implements ContractService {
 
     private final Web3j web3j;
     private final EnsService ensService;
-    private final Map<String, VaspContractInfo> cache = new ConcurrentHashMap<>();
+    private final Map<EthAddr, VaspContractInfo> cache = new ConcurrentHashMap<>();
 
     @Inject
     public ContractServiceImpl(@ContractNode final Web3j web3j, final EnsService ensService) {
@@ -44,7 +41,7 @@ public final class ContractServiceImpl implements ContractService {
     @Override
     @SuppressWarnings("unchecked")
     @SneakyThrows
-    public VaspContractInfo getVaspContractInfo(@NonNull final String vaspSmartContracAddress) {
+    public VaspContractInfo getVaspContractInfo(@NonNull final EthAddr vaspSmartContracAddress) {
         VaspContractInfo result = cache.get(vaspSmartContracAddress);
         if (result != null) {
             return result;
@@ -52,7 +49,7 @@ public final class ContractServiceImpl implements ContractService {
 
         log.debug("Request for the contract info at the address {}", vaspSmartContracAddress);
 
-        val contract = VASP.load(vaspSmartContracAddress, web3j, Credentials.create("0x0"), new DefaultGasProvider());
+        val contract = VASP.load(vaspSmartContracAddress.getData(), web3j, Credentials.create("0x0"), new DefaultGasProvider());
 
         val postalAddress = contract.postalAddress().send();
         val address = PostalAddress.builder()
