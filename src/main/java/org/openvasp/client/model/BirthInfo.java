@@ -20,7 +20,7 @@ import java.time.LocalDate;
 public final class BirthInfo {
 
     @JsonProperty("birthdate")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyyMMdd")
     private LocalDate birthDate;
 
     @JsonProperty("birthcity")
