@@ -1,0 +1,20 @@
+{
+  "whisperNodeUrl": "",
+  "contractNodeUrl": "",
+  "vaspCode": "1cd48daa",
+  "handshakePrivateKey": "0x909aa47d973d34adf9bc44d6e1d755f89b9ca2972da77966336972a602a243db",
+  "signingPrivateKey": "0x9b3aaa8e802a1d42cf112dfc0e035440c451102d358163d345f6b3968415b077",
+  "vaspInfo": {
+    "name": "VASP-3",
+    "id": "0x4dd7e1e2d5640a06ed81f155f171012f1cd48daa",
+    "pk": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    "address": {
+        "street": "Vaspstrasse",
+        "number": "3",
+        "adrline": "Building 3",
+        "postcode": "33333",
+        "town": "Vaspburg",
+        "country": "DE"
+    }
+  }
+}

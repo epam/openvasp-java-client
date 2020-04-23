@@ -4,7 +4,13 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{HH:mm:ss.SSS} %m%n</pattern>
+            <pattern>[%-5level] %-27thread: %-27logger{0} %m%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-27thread: %m%n</pattern>
         </encoder>
     </appender>
 
@@ -14,11 +20,17 @@
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%date{HH:mm:ss.SSS} %logger %m%n</pattern>
+            <pattern>%date{HH:mm:ss.SSS} [%-5level] %-15thread: %logger %m%n</pattern>
         </encoder>
     </appender>
 
-    <logger name="org.openvasp" level="info"/>
+    <logger name="org.openvasp" level="debug" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="org.openvasp.host.cli.CliHostApp" level="info" additivity="false">
+        <appender-ref ref="APP"/>
+    </logger>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

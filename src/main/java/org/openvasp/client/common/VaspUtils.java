@@ -35,6 +35,12 @@ public final class VaspUtils {
         return toHex(result, true);
     }
 
+    public static String randomHexStr(final int size) {
+        byte[] result = new byte[size];
+        SECURE_RANDOM.nextBytes(result);
+        return toHex(result, true);
+    }
+
     public static String toHex(@NonNull final byte[] bytes, final boolean prefix) {
         val result = new StringBuilder();
         if (prefix) {
