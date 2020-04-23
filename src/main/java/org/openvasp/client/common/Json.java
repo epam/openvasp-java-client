@@ -12,6 +12,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -104,6 +106,17 @@ public final class Json {
         return Resources.toString(
                 Resources.getResource(JSON_TEST_DATA + path),
                 Charset.defaultCharset());
+    }
+
+    @SneakyThrows
+    public static <T> T loadFileJson(
+            @NonNull final Class<T> cls,
+            @NonNull final String path,
+            final String... more) {
+
+        try (val stream = Files.newInputStream(Paths.get(path, more))) {
+            return Json.MAPPER.readValue(stream, cls);
+        }
     }
 
 }
