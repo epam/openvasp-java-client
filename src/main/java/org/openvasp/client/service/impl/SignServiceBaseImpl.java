@@ -25,16 +25,16 @@ abstract class SignServiceBaseImpl implements SignService {
 
     @Override
     public String makeSignedPayload(@NonNull final VaspMessage message, @NonNull final String privateKey) {
-        val json = Json.toJson(message);
-        val signature = signPayload(json, privateKey);
-        return hexStrEncode(json + signature, true);
+        val encodedJson = hexStrEncode(Json.toJson(message), true);
+        val signature = signPayload(encodedJson, privateKey);
+        return encodedJson + signature;
     }
 
     @Override
     public VaspMessage extractSignedMessage(@NonNull final String whisperPayload) {
-        val payload = hexStrDecode(whisperPayload);
-        val json = StringUtils.left(payload, payload.length() - signatureLength());
-        val signature = StringUtils.right(payload, signatureLength());
+        val payload = StringUtils.left(whisperPayload, whisperPayload.length() - signatureLength());
+        val json = hexStrDecode(payload);
+        val signature = StringUtils.right(whisperPayload, signatureLength());
 
         val vaspMessage = VaspMessage.fromJson(json);
         vaspMessage.validate();
@@ -43,7 +43,7 @@ abstract class SignServiceBaseImpl implements SignService {
         val senderContract = contractService.getVaspContractInfo(senderVaspCode);
         val publicSigningKey = senderContract.getSigningKey();
 
-        if (!verifySign(json, signature, publicSigningKey)) {
+        if (!verifySign(payload, signature, publicSigningKey)) {
             throw new VaspValidationException(
                     vaspMessage,
                     "Invalid signature for incoming message");
