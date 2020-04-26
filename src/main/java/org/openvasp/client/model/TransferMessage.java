@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.val;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.NoSuchElementException;
 
 /**
@@ -68,7 +68,8 @@ public abstract class TransferMessage extends VaspMessage {
         private String id;
 
         @JsonProperty("datetime")
-        private LocalDateTime dateTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssX")
+        private ZonedDateTime dateTime;
 
         @JsonProperty("sendingadr")
         private String sendingAddress;

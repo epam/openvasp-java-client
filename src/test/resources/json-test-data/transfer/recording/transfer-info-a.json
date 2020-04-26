@@ -16,7 +16,7 @@
   },
   "tx": {
     "txid": "TX01",
-    "datetime": "2020-04-02T10:00:00",
+    "datetime": "2020-04-02T10:00:00Z",
     "sendingadr": "SADDR01"
   }
 }

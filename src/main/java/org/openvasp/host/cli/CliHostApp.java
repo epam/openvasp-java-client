@@ -24,7 +24,7 @@ import org.openvasp.client.model.VaspMessage.TypeDescriptor;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import static java.lang.System.out;
 
@@ -134,7 +134,7 @@ public final class CliHostApp implements AutoCloseable, SimpleTransferHandler {
         Transaction tx = new Transaction();
         response.setTx(tx);
         tx.setId(VaspUtils.randomHexStr(16));
-        tx.setDateTime(LocalDateTime.now());
+        tx.setDateTime(ZonedDateTime.now());
         SimpleTransferHandler.super.onTransferReply(request, response, session);
     }
 

@@ -16,7 +16,7 @@ import org.openvasp.client.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -166,7 +166,7 @@ public abstract class BaseRecordingTransferIT {
                     response.setBeneficiary(session.transferInfo().getBeneficiary());
                     response.setTransfer(session.transferInfo().getTransfer());
                     response.setTx(new TransferMessage.Transaction());
-                    response.getTx().setDateTime(LocalDateTime.now());
+                    response.getTx().setDateTime(ZonedDateTime.now());
                     return response;
                 });
 

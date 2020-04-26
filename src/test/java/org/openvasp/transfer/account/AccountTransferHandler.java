@@ -8,7 +8,7 @@ import org.openvasp.client.model.TransferMessage.Transaction;
 import org.openvasp.client.session.Session;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -57,7 +57,7 @@ final class AccountTransferHandler implements SimpleTransferHandler {
 
         Transaction tx = new Transaction();
         tx.setId(txID);
-        tx.setDateTime(LocalDateTime.now());
+        tx.setDateTime(ZonedDateTime.now());
         tx.setSendingAddress(request.getTransfer().getDestinationAddress());
         response.setTx(tx);
 
