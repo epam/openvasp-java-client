@@ -46,7 +46,9 @@ public abstract class SessionMessage extends VaspMessage {
         private String sessionPublicKey;
 
         public void validate(VaspMessage source) {
-            if (null != sessionPublicKey && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH) {
+            if (null != sessionPublicKey && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH
+                    && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH-2)
+            {
                 throw new VaspValidationException(source,
                         "The field 'ecdhpk' is invalid - must be a hexadecimal string of length %d, but is: %s",
                         ECDHPK_LENGTH,
