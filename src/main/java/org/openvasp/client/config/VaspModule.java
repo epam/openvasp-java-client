@@ -10,16 +10,10 @@ import org.openvasp.client.api.whisper.impl.WhisperApiImpl;
 import org.openvasp.client.common.annotation.ContractNode;
 import org.openvasp.client.common.annotation.WhisperNode;
 import org.openvasp.client.model.VaspCode;
-import org.openvasp.client.service.ContractService;
-import org.openvasp.client.service.EnsService;
-import org.openvasp.client.service.MessageService;
-import org.openvasp.client.service.SignService;
-import org.openvasp.client.service.impl.ContractServiceImpl;
-import org.openvasp.client.service.impl.EnsServiceImpl;
-import org.openvasp.client.service.impl.MessageServiceImpl;
-import org.openvasp.client.service.impl.SignServiceImpl;
-import org.openvasp.client.session.VaspInstance;
-import org.openvasp.client.session.impl.VaspInstanceImpl;
+import org.openvasp.client.service.*;
+import org.openvasp.client.service.impl.*;
+import org.openvasp.client.session.SessionManager;
+import org.openvasp.client.session.impl.SessionManagerImpl;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.Web3jService;
 import org.web3j.protocol.http.HttpService;
@@ -90,7 +84,14 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         bindContractService();
         bindSignService();
         bind(MessageService.class).to(MessageServiceImpl.class);
-        bind(VaspInstance.class).to(VaspInstanceImpl.class);
+
+        if (Boolean.TRUE.equals(vaspConfig.getAcknowledgmentEnabled())) {
+            bind(ConfirmationService.class).to(ConfirmationServiceImpl.class);
+        } else {
+            bind(ConfirmationService.class).to(EmptyConfirmationServiceImpl.class);
+        }
+
+        bind(SessionManager.class).to(SessionManagerImpl.class);
     }
 
     protected void bindEnsService() {

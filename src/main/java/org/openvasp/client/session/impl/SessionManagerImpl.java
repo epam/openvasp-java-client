@@ -10,7 +10,7 @@ import org.openvasp.client.service.*;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
-import org.openvasp.client.session.VaspInstance;
+import org.openvasp.client.session.SessionManager;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,7 +29,7 @@ import java.util.function.BiConsumer;
  * @author Olexandr_Bilovol@epam.com
  */
 @Singleton
-public final class VaspInstanceImpl implements VaspInstance, TopicListener {
+public final class SessionManagerImpl implements SessionManager, TopicListener {
 
     final ContractService contractService;
     final MessageService messageService;
@@ -51,7 +51,7 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
     private final Condition noActiveSessionsCondition = sessionsLock.newCondition();
 
     @Inject
-    public VaspInstanceImpl(
+    public SessionManagerImpl(
             final VaspConfig vaspConfig,
             final ContractService contractService,
             final MessageService messageService) {
@@ -226,6 +226,23 @@ public final class VaspInstanceImpl implements VaspInstance, TopicListener {
         } finally {
             sessionsLock.unlock();
         }
+    }
+
+    @Override
+    public Session restoreSession(@NonNull final Session.State sessionState) {
+        return sessionState.getType() == Session.Type.ORIGINATOR
+                ? restoreOriginatorSession(sessionState)
+                : restoreBeneficiarySession(sessionState);
+    }
+
+    private Session restoreOriginatorSession(final Session.State sessionState) {
+        // TODO: to be implemented
+        throw new UnsupportedOperationException();
+    }
+
+    private Session restoreBeneficiarySession(final Session.State sessionState) {
+        // TODO: to be implemented
+        throw new UnsupportedOperationException();
     }
 
 }

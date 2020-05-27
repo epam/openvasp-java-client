@@ -15,10 +15,13 @@ import static org.openvasp.client.model.VaspResponseCode.OK;
  */
 final class OriginatorSessionImpl extends AbstractSession implements OriginatorSession {
 
-    OriginatorSessionImpl(@NonNull final VaspInstanceImpl owner, @NonNull final TransferInfo transferInfo) {
+    OriginatorSessionImpl(
+            @NonNull final SessionManagerImpl owner,
+            @NonNull final TransferInfo transferInfo) {
+
         super(owner, VaspUtils.newSessionId());
 
-        // 6 items to init, the as in BeneficiarySessionImpl
+        // 6 items to init, the same as in BeneficiarySessionImpl
         this.peerVaspInfo = null;
         this.transferInfo = transferInfo;
         this.topicA = Topic.newRandom();
@@ -66,7 +69,7 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
 
             val contract = contractService().getVaspContractInfo(peerVaspCode());
 
-            owner.messageService.send(
+            messageService().send(
                     peerVaspCode().toTopic(),
                     EncryptionType.ASSYMETRIC,
                     contract.getHandshakeKey(),
@@ -116,6 +119,12 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
     @Override
     public void remove() {
         owner.removeOriginatorSession(this);
+    }
+
+    @Override
+    void buildState(final SessionStateImpl.SessionStateImplBuilder builder) {
+        super.buildState(builder);
+        builder.type(Type.ORIGINATOR);
     }
 
 }

@@ -5,8 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.openvasp.client.VaspClient;
+import org.openvasp.client.VaspInstance;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
 import org.openvasp.client.common.VaspException;
@@ -24,8 +23,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.openvasp.client.common.TestConstants.WAIT_TIMEOUT_1;
-import static org.openvasp.client.common.TestConstants.WAIT_TIMEOUT_2;
+import static org.openvasp.client.common.TestConstants.*;
 import static org.openvasp.client.model.VaspResponseCode.OK;
 
 /**
@@ -39,9 +37,9 @@ public abstract class BaseRecordingTransferIT {
             module1,
             module2;
 
-    VaspClient
-            client1,
-            client2;
+    VaspInstance
+            instance1,
+            instance2;
 
     final TransferInfo
             transferA = Json.loadTestJson(TransferInfo.class, "transfer/recording/transfer-info-a.json"),
@@ -56,63 +54,68 @@ public abstract class BaseRecordingTransferIT {
     }
 
     @BeforeEach
+    @SneakyThrows
     public void setUp() {
-        client1 = new VaspClient(module1);
-        client2 = new VaspClient(module2);
+        instance1 = new VaspInstance(module1);
+        instance1.startVaspInstance();
+        instance2 = new VaspInstance(module2);
+        instance2.startVaspInstance();
+        Thread.sleep(WAIT_TIMEOUT_3);
     }
 
     @AfterEach
     @SneakyThrows
     public void tearDown() {
-        client1.close();
-        client2.close();
+        instance1.close();
+        instance2.close();
     }
 
     public void checkCallbackStyleTransfer() {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
         val messageHandler = new RecordingTestHandler(transferLog);
         final BiConsumer<VaspException, Session> errorLogger =
-                (exception, session) -> { log.error("Error while executing scenario: ", exception); };
+                (exception, session) -> {
+                    log.error("Error while executing scenario: ", exception);
+                };
 
-        client1.setCustomMessageHandler(messageHandler);
-        client1.setCustomErrorHandler(errorLogger);
-        client2.setCustomMessageHandler(messageHandler);
-        client2.setCustomErrorHandler(errorLogger);
+        instance1.setCustomMessageHandler(messageHandler);
+        instance1.setCustomErrorHandler(errorLogger);
+        instance2.setCustomMessageHandler(messageHandler);
+        instance2.setCustomErrorHandler(errorLogger);
 
-        // Initiate transfer client1 => client2
-        val originatorSessionA = client1.createOriginatorSession(transferA);
+        // Initiate transfer instance1 => instance2
+        val originatorSessionA = instance1.createOriginatorSession(transferA);
         originatorSessionA.startTransfer();
 
         // Wait for the transfer to be completed
-        assertThat(client1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
-        assertThat(client2.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
+        assertThat(instance1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
+        assertThat(instance2.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
 
         checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_1, TestConstants.VASP_CODE_2, transferA);
 
         // Clear transfer log before the second transfer
         transferLog.clear();
 
-        // Initiate transfer client2 => client1
-        val originatorSessionB = client2.createOriginatorSession(transferB);
+        // Initiate transfer instance2 => instance1
+        val originatorSessionB = instance2.createOriginatorSession(transferB);
         originatorSessionB.startTransfer();
 
         // Wait for the transfer to be completed
-        assertThat(client2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
-        assertThat(client1.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
+        assertThat(instance2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
+        assertThat(instance1.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
 
         checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_2, TestConstants.VASP_CODE_1, transferB);
     }
 
-    @Test
     public void checkWaitingStyleTransfer() {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
 
-        // Initiate transfer client1 => client2
-        val originatorSession = client1.createOriginatorSession(transferA);
+        // Initiate transfer instance1 => instance2
+        val originatorSession = instance1.createOriginatorSession(transferA);
         originatorSession.startTransfer();
 
         // Wait for the beneficiary session to be created
-        val beneficiarySessionOpt = client2.waitForBeneficiarySession(originatorSession.sessionId(), WAIT_TIMEOUT_2);
+        val beneficiarySessionOpt = instance2.waitForBeneficiarySession(originatorSession.sessionId(), WAIT_TIMEOUT_2);
         assertThat(beneficiarySessionOpt).isNotEmpty();
         val beneficiarySession = beneficiarySessionOpt.get();
 

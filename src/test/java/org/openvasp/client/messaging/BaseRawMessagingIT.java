@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.openvasp.client.VaspClient;
+import org.openvasp.client.VaspInstance;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.slf4j.Logger;
@@ -32,7 +32,7 @@ public abstract class BaseRawMessagingIT {
     final List<VaspMessage> messages;
     final VaspModule module1, module2;
 
-    VaspClient client1, client2;
+    VaspInstance instance1, instance2;
 
     public BaseRawMessagingIT(@NonNull final VaspModule module1, @NonNull final VaspModule module2) {
         this.module1 = module1;
@@ -56,16 +56,16 @@ public abstract class BaseRawMessagingIT {
 
     @BeforeEach
     public void setUp() {
-        this.client1 = new VaspClient(module1);
-        this.client2 = new VaspClient(module2);
+        this.instance1 = new VaspInstance(module1);
+        this.instance2 = new VaspInstance(module2);
     }
 
     @AfterEach
     public void tearDown() {
-        client1.close();
-        client1 = null;
-        client2.close();
-        client2 = null;
+        instance1.close();
+        instance1 = null;
+        instance2.close();
+        instance2 = null;
     }
 
     @SneakyThrows
@@ -73,7 +73,7 @@ public abstract class BaseRawMessagingIT {
         log.debug("check asymmetric sending and receiving");
 
         val receivedMessages = new ArrayList<VaspMessage>();
-        client1.addTopicListener(
+        instance1.addTopicListener(
                 module1.getVaspCode().toTopic(),
                 EncryptionType.ASSYMETRIC,
                 module1.getVaspConfig().getHandshakePrivateKey(),
@@ -82,23 +82,23 @@ public abstract class BaseRawMessagingIT {
                     logVaspMessage(message);
                     receivedMessages.add(message);
                     if (receivedMessages.size() == messages.size()) {
-                        client1.shutdown();
+                        instance1.shutdown();
                     }
                 }
         );
 
-        val contract1 = client2.getVaspContractInfo(CONTRACT_ADDRESS_1);
+        val contract1 = instance2.getVaspContractInfo(CONTRACT_ADDRESS_1);
         for (val message : messages) {
-            client2.send(
+            instance2.send(
                     module1.getVaspCode().toTopic(),
                     EncryptionType.ASSYMETRIC,
                     contract1.getHandshakeKey(),
                     message);
         }
 
-        if (!client1.waitForTermination(WAIT_TIMEOUT_1)) {
-            client1.shutdown();
-            client1.waitForTermination(WAIT_TIMEOUT_2);
+        if (!instance1.waitForTermination(WAIT_TIMEOUT_1)) {
+            instance1.shutdown();
+            instance1.waitForTermination(WAIT_TIMEOUT_2);
         }
 
         receivedMessages.sort(Comparator.comparing(message -> message.getHeader().getMessageId()));
@@ -111,12 +111,12 @@ public abstract class BaseRawMessagingIT {
     public void checkSymmetricSendAndReceive() {
         log.debug("check symmetric sending and receiving");
 
-        val keyId = client1.generateSymKeyFromPassword("Hello,World!");
-        val symKey = client1.getSymKey(keyId);
+        val keyId = instance1.generateSymKeyFromPassword("Hello,World!");
+        val symKey = instance1.getSymKey(keyId);
 
         val receivedMessages = new ArrayList<VaspMessage>();
 
-        client1.addTopicListener(
+        instance1.addTopicListener(
                 module1.getVaspCode().toTopic(),
                 EncryptionType.SYMMETRIC,
                 symKey,
@@ -125,22 +125,22 @@ public abstract class BaseRawMessagingIT {
                     logVaspMessage(message);
                     receivedMessages.add(message);
                     if (receivedMessages.size() == messages.size()) {
-                        client1.shutdown();
+                        instance1.shutdown();
                     }
                 }
         );
 
         for (val message : messages) {
-            client1.send(
+            instance1.send(
                     module1.getVaspCode().toTopic(),
                     EncryptionType.SYMMETRIC,
                     symKey,
                     message);
         }
 
-        if (!client1.waitForTermination(WAIT_TIMEOUT_1)) {
-            client1.shutdown();
-            client1.waitForTermination(WAIT_TIMEOUT_2);
+        if (!instance1.waitForTermination(WAIT_TIMEOUT_1)) {
+            instance1.shutdown();
+            instance1.waitForTermination(WAIT_TIMEOUT_2);
         }
 
         receivedMessages.sort(Comparator.comparing(message -> message.getHeader().getMessageId()));

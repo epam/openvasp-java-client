@@ -25,7 +25,7 @@ public enum EncryptionType {
         return id;
     }
 
-    @JsonCreator
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static EncryptionType fromId(int id) {
         for (val item : EncryptionType.values()) {
             if (item.id == id) {

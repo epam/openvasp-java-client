@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public class VaspClientTests {
+public class VaspInstanceTests {
 
     @Test
     public void checkVersion() {
-        Assertions.assertEquals("0.0.1", VaspClient.VERSION);
+        Assertions.assertEquals("0.0.1", VaspInstance.VERSION);
     }
 
 }

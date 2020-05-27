@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.openvasp.client.VaspClient;
+import org.openvasp.client.VaspInstance;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
 import org.openvasp.client.common.VaspException;
@@ -36,12 +36,12 @@ public abstract class BaseAccountTransferIT {
             module2,
             module3;
 
-    VaspClient
-            client1,
-            client2,
-            client3;
+    VaspInstance
+            instance1,
+            instance2,
+            instance3;
 
-    Map<VaspCode, VaspClient> clientMap = new HashMap<>();
+    Map<VaspCode, VaspInstance> instanceMap = new HashMap<>();
 
     AccountService accountService;
 
@@ -68,32 +68,32 @@ public abstract class BaseAccountTransferIT {
         final BiConsumer<VaspException, Session> errorLogger = 
                 (exception, session) -> { log.error("Error while executing scenario: ", exception); };
 
-        client1 = new VaspClient(module1);
-        client1.setCustomMessageHandler(messageHandler);
-        client1.setCustomErrorHandler(errorLogger);
+        instance1 = new VaspInstance(module1);
+        instance1.setCustomMessageHandler(messageHandler);
+        instance1.setCustomErrorHandler(errorLogger);
 
-        client2 = new VaspClient(module2);
-        client2.setCustomMessageHandler(messageHandler);
-        client2.setCustomErrorHandler(errorLogger);
+        instance2 = new VaspInstance(module2);
+        instance2.setCustomMessageHandler(messageHandler);
+        instance2.setCustomErrorHandler(errorLogger);
 
-        client3 = new VaspClient(module3);
-        client3.setCustomMessageHandler(messageHandler);
-        client3.setCustomErrorHandler(errorLogger);
+        instance3 = new VaspInstance(module3);
+        instance3.setCustomMessageHandler(messageHandler);
+        instance3.setCustomErrorHandler(errorLogger);
 
-        clientMap.put(module1.getVaspCode(), client1);
-        clientMap.put(module2.getVaspCode(), client2);
-        clientMap.put(module3.getVaspCode(), client3);
+        instanceMap.put(module1.getVaspCode(), instance1);
+        instanceMap.put(module2.getVaspCode(), instance2);
+        instanceMap.put(module3.getVaspCode(), instance3);
 
         Thread.sleep(1000);
-        log.debug("Vasp clients are ready");
+        log.debug("Vasp instances are ready");
     }
 
     @AfterEach
     @SneakyThrows
     public void tearDown() {
-        client1.close();
-        client2.close();
-        client3.close();
+        instance1.close();
+        instance2.close();
+        instance3.close();
     }
 
     public void checkMultipleTransfers() {
@@ -103,9 +103,9 @@ public abstract class BaseAccountTransferIT {
         startTransfer(transferB);
         startTransfer(transferC);
 
-        assertThat(client1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
-        assertThat(client2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
-        assertThat(client3.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
+        assertThat(instance1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
+        assertThat(instance2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
+        assertThat(instance3.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
 
         assertThat(accountService.getBalance(TestConstants.VAAN_1_LIST[0]))
                 .isEqualByComparingTo(new BigDecimal("102.0"));
@@ -118,7 +118,7 @@ public abstract class BaseAccountTransferIT {
     }
 
     private void startTransfer(@NonNull final TransferInfo transferInfo) {
-        clientMap
+        instanceMap
                 .get(transferInfo.getOriginator().getVaan().getVaspCode())
                 .createOriginatorSession(transferInfo)
                 .startTransfer();

@@ -114,7 +114,7 @@ public abstract class VaspMessage {
             return String.valueOf(id);
         }
 
-        @JsonCreator
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         public static TypeDescriptor fromIdStr(final String idStr) {
             int id = Integer.parseInt(idStr);
             for (val item : TypeDescriptor.values()) {

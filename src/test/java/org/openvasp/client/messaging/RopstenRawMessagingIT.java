@@ -8,6 +8,7 @@ import org.openvasp.client.config.RopstenTestModule;
  * @author Olexandr_Bilovol@epam.com
  */
 @Tag("raw-messaging")
+@Tag("ropsten")
 public class RopstenRawMessagingIT extends BaseRawMessagingIT {
 
     public RopstenRawMessagingIT() {
