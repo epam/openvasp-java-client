@@ -1,0 +1,69 @@
+{
+  "originator": {
+    "name": "Test van der Test",
+    "vaan": "7dface61524ee3fb0828095d",
+    "address": {
+      "street": "StreetX",
+      "number": "44",
+      "adrline": "AddressLineX",
+      "postcode": "510051",
+      "town": "TownX",
+      "country": "DE"
+    },
+    "birth": {
+      "birthdate": "19900428",
+      "birthcity": "TownX",
+      "birthcountry": "DE"
+    },
+    "nat": [
+      {
+        "natid_type": 2,
+        "natid": "Id",
+        "natid_country": "DE",
+        "natid_issuer": ""
+      }
+    ]
+  },
+  "beneficiary": {
+    "name": "name",
+    "vaan": "bbb4ee5c524ee3fb08280970"
+  },
+  "transfer": {
+    "va": "BTC",
+    "ttype": 1,
+    "amount": 123.0
+  },
+  "vasp": {
+    "name": "TestVaspContractPerson",
+    "id": "0x6befaf0656b953b188a0ee3bf3db03d07dface61",
+    "pk": "0x043061dce78a75a970fe7ff297870023931983982cb8615bfd9fe72c52f0040b6bf5e1a6c15085170eac9c584b2bf72d6296949e7ed60caaccf0c4f6ec0d330a5d",
+    "address": {
+      "street": "Some StreetName ",
+      "number": "64",
+      "adrline": "Some AddressLine",
+      "postcode": "310031",
+      "town": "TownN",
+      "country": "DE"
+    },
+    "birth": {
+      "birthdate": "20200428",
+      "birthcity": "Town X",
+      "birthcountry": "DE"
+    },
+    "nat": [
+      {
+        "natid_type": 1,
+        "natid": "ID",
+        "natid_country": "DE",
+        "natid_issuer": ""
+      }
+    ]
+  },
+  "msg": {
+    "type": "210",
+    "msgid": "0xb9e111b5136bb244b674ec978c2c6444",
+    "session": "0xa62eaebed74300448b9e6bd89a3a8f6e",
+    "code": "1"
+  },
+  "comment": ""
+}

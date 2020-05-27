@@ -1,0 +1,65 @@
+{
+  "originator": {
+    "name": "Test van der Test",
+    "vaan": "7dface61524ee3fb0828095d",
+    "address": {
+      "street": "StreetX",
+      "number": "44",
+      "adrline": "AddressLineX",
+      "postcode": "510051",
+      "town": "TownX",
+      "country": "DE"
+    },
+    "birth": {
+      "birthdate": "19900428",
+      "birthcity": "TownX",
+      "birthcountry": "DE"
+    },
+    "nat": [
+      {
+        "natid_type": 2,
+        "natid": "Id",
+        "natid_country": "DE",
+        "natid_issuer": ""
+      }
+    ]
+  },
+  "beneficiary": {
+    "name": "name",
+    "vaan": "bbb4ee5c524ee3fb08280970"
+  },
+  "transfer": {
+    "destination": "dest",
+    "va": "BTC",
+    "ttype": 1,
+    "amount": 123.0
+  },
+  "vasp": {
+    "name": "TestOpenVaspJur",
+    "id": "0x08FDa931D64b17c3aCFfb35C1B3902e0BBB4eE5C",
+    "pk": "0x04d6d18d789fc1c61feb3c84342e8e4ff1ab650fcbafb29207f08cdad4755972483bbe24ff052a97ffb25c6b56139d64f2f6946bdf77807deefe3ab012dec359c1",
+    "address": {
+      "street": "JurStreetName",
+      "number": "124",
+      "adrline": "JurAddressLine",
+      "postcode": "2100000",
+      "town": "TownN-1",
+      "country": "DE"
+    },
+    "jur": [
+      {
+        "jurid_type": 5,
+        "jurid": "ID",
+        "jurid_country": "DE",
+        "jurid_issuer": ""
+      }
+    ]
+  },
+  "msg": {
+    "type": "250",
+    "msgid": "0xb6e0e015ecc99e4b9ef70b44281df8f1",
+    "session": "0x248d987c83e76548840f0f9d6032fd89",
+    "code": "1"
+  },
+  "comment": ""
+}

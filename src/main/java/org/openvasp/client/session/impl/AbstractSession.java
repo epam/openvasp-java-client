@@ -3,6 +3,7 @@ package org.openvasp.client.session.impl;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.val;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.common.VaspUtils;
 import org.openvasp.client.crypto.ECDHKeyPair;
@@ -27,7 +28,7 @@ import java.util.function.BiConsumer;
  */
 abstract class AbstractSession implements Session, TopicListener {
 
-    final VaspInstanceImpl owner;
+    final SessionManagerImpl owner;
 
     @Getter
     @Setter
@@ -56,7 +57,7 @@ abstract class AbstractSession implements Session, TopicListener {
 
     private final List<VaspException> errors = Collections.synchronizedList(new ArrayList<>());
 
-    AbstractSession(@NonNull final VaspInstanceImpl owner, @NonNull final String sessionId) {
+    AbstractSession(@NonNull final SessionManagerImpl owner, @NonNull final String sessionId) {
         this.owner = owner;
         this.sessionId = sessionId;
     }
@@ -114,7 +115,7 @@ abstract class AbstractSession implements Session, TopicListener {
         message.getHeader().setSessionId(sessionId);
         message.setVaspInfo(owner.vaspInfo);
 
-        owner.messageService.send(
+        messageService().send(
                 outgoingMessageTopic(),
                 EncryptionType.SYMMETRIC,
                 sharedSecret(),
@@ -166,18 +167,16 @@ abstract class AbstractSession implements Session, TopicListener {
     }
 
     @Override
-    public Object getAttr(@NonNull String key) {
-        return attrs.get(key);
+    public State getState() {
+        val builder = SessionStateImpl.builder();
+        buildState(builder);
+        return builder.build();
     }
 
-    @Override
-    public Object putAttr(@NonNull String key, @NonNull Object value) {
-        return attrs.put(key, value);
-    }
-
-    @Override
-    public Object removeAttr(@NonNull String key) {
-        return attrs.remove(key);
+    void buildState(final SessionStateImpl.SessionStateImplBuilder builder) {
+        builder.id(sessionId)
+                .incomingTopic(incomingMessageTopic())
+                .outgoingTopic(outgoingMessageTopic());
     }
 
 }

@@ -8,12 +8,13 @@
     "id": "0x6befaf0656b953b188a0ee3bf3db03d07dface61",
     "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     "address": {
-        "street": "Vaspstreet",
-        "number": "1",
-        "adrline": "Building 1",
-        "postcode": "11111",
-        "town": "Vasptown",
-        "country": "US"
+      "street": "Vaspstreet",
+      "number": "1",
+      "adrline": "Building 1",
+      "postcode": "11111",
+      "town": "Vasptown",
+      "country": "US"
     }
-  }
+  },
+  "acknowledgmentEnabled": true
 }

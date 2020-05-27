@@ -13,12 +13,12 @@ import org.openvasp.client.session.BeneficiarySession;
 final class BeneficiarySessionImpl extends AbstractSession implements BeneficiarySession {
 
     public BeneficiarySessionImpl(
-            @NonNull final VaspInstanceImpl owner,
+            @NonNull final SessionManagerImpl owner,
             @NonNull final SessionRequest sessionRequest) {
 
         super(owner, sessionRequest.getHeader().getSessionId());
 
-        // 6 items to init, the as in OriginatorSessionImpl
+        // 6 items to init, the same as in OriginatorSessionImpl
         this.peerVaspInfo = sessionRequest.getVaspInfo();
         this.transferInfo = new TransferInfo();
         this.topicA = sessionRequest.getHandshake().getTopicA();
@@ -91,6 +91,12 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
     @Override
     public void remove() {
         owner.removeBenefeciarySession(this);
+    }
+
+    @Override
+    void buildState(final SessionStateImpl.SessionStateImplBuilder builder) {
+        super.buildState(builder);
+        builder.type(Type.BENEFICIARY);
     }
 
 }

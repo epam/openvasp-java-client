@@ -66,5 +66,6 @@ public interface TestConstants {
 
     long WAIT_TIMEOUT_1 = 25000;
     long WAIT_TIMEOUT_2 = 10000;
+    long WAIT_TIMEOUT_3 = 3000;
 
 }

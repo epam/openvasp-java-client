@@ -13,13 +13,14 @@ import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
+import org.openvasp.client.service.ConfirmationService;
 import org.openvasp.client.service.ContractService;
 import org.openvasp.client.service.MessageService;
 import org.openvasp.client.service.TopicListener;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
-import org.openvasp.client.session.VaspInstance;
+import org.openvasp.client.session.SessionManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,12 +30,13 @@ import java.util.function.BiConsumer;
  * @author Olexandr_Bilovol@epam.com
  */
 @Slf4j
-public final class VaspClient implements
+public final class VaspInstance implements
         AutoCloseable,
         WhisperSymKeyApi,
         ContractService,
         MessageService,
-        VaspInstance {
+        ConfirmationService,
+        SessionManager {
 
     public static final String VERSION = "0.0.1";
 
@@ -51,16 +53,21 @@ public final class VaspClient implements
     private final MessageService messageService = injector.getInstance(MessageService.class);
 
     @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final VaspInstance vaspInstance = injector.getInstance(VaspInstance.class);
+    private final ConfirmationService confirmationService = injector.getInstance(ConfirmationService.class);
 
-    public VaspClient(@NonNull final VaspModule module) {
+    @Getter(value = AccessLevel.PRIVATE, lazy = true)
+    private final SessionManager sessionManager = injector.getInstance(SessionManager.class);
+
+    public VaspInstance(@NonNull final VaspModule module) {
         this.module = module;
         this.injector = Guice.createInjector(module);
+        // Create and start ConfirmationService
+        getConfirmationService();
         // Create and start MessageService
         getMessageService();
     }
 
-    public VaspClient(@NonNull final VaspConfig vaspConfig) {
+    public VaspInstance(@NonNull final VaspConfig vaspConfig) {
         this(new VaspModule(vaspConfig));
     }
 
@@ -68,10 +75,16 @@ public final class VaspClient implements
         log.info("OpenVASP client, v{}, VASP code: {}", VERSION, module.getVaspCode());
     }
 
+    public void startVaspInstance() {
+        // Start listening for SessionRequest's
+        getSessionManager();
+    }
+
     @Override
     @SneakyThrows
     public void close() {
         getMessageService().close();
+        getConfirmationService().close();
         module.close();
     }
 
@@ -156,18 +169,28 @@ public final class VaspClient implements
     }
 
     @Override
+    public void registerForConfirmation(@NonNull final VaspMessage message) {
+        getConfirmationService().registerForConfirmation(message);
+    }
+
+    @Override
+    public void confirmReceipt(@NonNull final VaspMessage message) {
+        getConfirmationService().confirmReceipt(message);
+    }
+
+    @Override
     public void setCustomMessageHandler(final BiConsumer<VaspMessage, Session> handler) {
-        getVaspInstance().setCustomMessageHandler(handler);
+        getSessionManager().setCustomMessageHandler(handler);
     }
 
     @Override
     public void setCustomErrorHandler(final BiConsumer<VaspException, Session> handler) {
-        getVaspInstance().setCustomErrorHandler(handler);
+        getSessionManager().setCustomErrorHandler(handler);
     }
 
     @Override
     public OriginatorSession createOriginatorSession(@NonNull final TransferInfo transferInfo) {
-        return getVaspInstance().createOriginatorSession(transferInfo);
+        return getSessionManager().createOriginatorSession(transferInfo);
     }
 
     @Override
@@ -175,27 +198,32 @@ public final class VaspClient implements
             @NonNull final String sessionId,
             final long msTimeout) {
 
-        return getVaspInstance().waitForBeneficiarySession(sessionId, msTimeout);
+        return getSessionManager().waitForBeneficiarySession(sessionId, msTimeout);
     }
 
     @Override
     public Optional<OriginatorSession> getOriginatorSession(@NonNull final String sessionId) {
-        return getVaspInstance().getOriginatorSession(sessionId);
+        return getSessionManager().getOriginatorSession(sessionId);
     }
 
     @Override
     public Optional<BeneficiarySession> getBeneficiarySession(@NonNull final String sessionId) {
-        return getVaspInstance().getBeneficiarySession(sessionId);
+        return getSessionManager().getBeneficiarySession(sessionId);
     }
 
     @Override
     public List<Session> allSessions() {
-        return getVaspInstance().allSessions();
+        return getSessionManager().allSessions();
     }
 
     @Override
     public boolean waitForNoActiveSessions(final long msTimeout) {
-        return getVaspInstance().waitForNoActiveSessions(msTimeout);
+        return getSessionManager().waitForNoActiveSessions(msTimeout);
+    }
+
+    @Override
+    public Session restoreSession(Session.State sessionState) {
+        return getSessionManager().restoreSession(sessionState);
     }
 
 }

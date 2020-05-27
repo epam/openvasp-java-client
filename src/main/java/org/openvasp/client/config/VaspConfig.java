@@ -38,4 +38,7 @@ public final class VaspConfig {
     @JsonProperty
     private VaspInfo vaspInfo;
 
+    @JsonProperty
+    private Boolean acknowledgmentEnabled;
+
 }

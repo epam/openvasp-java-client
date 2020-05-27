@@ -8,12 +8,13 @@
     "id": "0x08fda931d64b17c3acffb35c1b3902e0bbb4ee5c",
     "pk": "0xfedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321",
     "address": {
-        "street": "Vaspstreet",
-        "number": "2",
-        "adrline": "Building 2",
-        "postcode": "22222",
-        "town": "Vaspville",
-        "country": "CH"
+      "street": "Vaspstreet",
+      "number": "2",
+      "adrline": "Building 2",
+      "postcode": "22222",
+      "town": "Vaspville",
+      "country": "CH"
     }
-  }
+  },
+  "acknowledgmentEnabled": true
 }

@@ -66,10 +66,24 @@ public interface Session {
 
     void remove();
 
-    Object getAttr(String key);
+    /*
+     * Management of sessions' persistence. The State interface defines all necessary date that
+     * have to be stored in order to re-create the session later.
+     */
 
-    Object putAttr(String key, Object value);
+    enum Type {
+        ORIGINATOR,
+        BENEFICIARY
+    }
 
-    Object removeAttr(String key);
+    interface State {
+
+        Type getType();
+
+        String getId();
+
+    }
+
+    State getState();
 
 }

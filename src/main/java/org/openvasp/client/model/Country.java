@@ -3,10 +3,7 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import lombok.val;
+import lombok.*;
 import org.openvasp.client.common.Json;
 
 import java.util.Map;
@@ -31,11 +28,11 @@ public final class Country {
     }
 
     @JsonCreator
-    public static Country fromCode(final String code) {
+    public static Country fromCode(@NonNull final String code) {
         val result = ALL.get(code);
         if (result == null) {
             throw new NoSuchElementException(String.format(
-                    "%s with code = %d does not exist",
+                    "%s with code = %s does not exist",
                     Country.class.getName(),
                     code));
         }

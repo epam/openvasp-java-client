@@ -8,6 +8,7 @@ import org.openvasp.client.config.RopstenTestModule;
  * @author Olexandr_Bilovol@epam.com
  */
 @Tag("transfer")
+@Tag("ropsten")
 public class RopstenRecordingTransferIT extends BaseRecordingTransferIT {
 
     public RopstenRecordingTransferIT() {

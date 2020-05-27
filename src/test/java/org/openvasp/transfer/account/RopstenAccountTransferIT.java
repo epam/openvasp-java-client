@@ -8,6 +8,7 @@ import org.openvasp.client.config.RopstenTestModule;
  * @author Olexandr_Bilovol@epam.com
  */
 @Tag("transfer")
+@Tag("ropsten")
 public class RopstenAccountTransferIT extends BaseAccountTransferIT {
 
     public RopstenAccountTransferIT() {

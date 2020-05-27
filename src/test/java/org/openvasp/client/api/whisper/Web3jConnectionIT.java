@@ -6,7 +6,9 @@ import lombok.val;
 import org.bouncycastle.util.encoders.Base64;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.openvasp.client.common.Json;
 import org.openvasp.client.config.RopstenTestModule;
+import org.openvasp.client.config.VaspConfig;
 import org.web3j.ens.EnsResolver;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -24,15 +26,8 @@ public class Web3jConnectionIT {
     @Tag("web3j")
     @SneakyThrows
     public void checkLocalConnection() {
-        /*
-         * Start
-         *    geth --rpcapi personal,db,eth,net,web3 --rpc --dev
-         *    OR
-         *    npx ganache-cli --deterministic
-         * before running this test suite
-         * See https://github.com/web3j/web3j
-         */
-        val web3 = Web3j.build(new HttpService());  // defaults to http://localhost:8545/
+        val vaspConfig = Json.loadTestJson(VaspConfig.class, VASP_CONFIG_LOCAL_1);
+        val web3 = Web3j.build(new HttpService(vaspConfig.getHttpServiceUrl()));
         val web3ClientVersion = web3.web3ClientVersion().send();
         val clientVersion = web3ClientVersion.getWeb3ClientVersion();
         log.debug(clientVersion);
@@ -53,6 +48,7 @@ public class Web3jConnectionIT {
 
     @Test
     @Tag("web3j")
+    @Tag("ens")
     @SneakyThrows
     public void checkRopstenEnsEntries() {
         val web3 = getRopstenConnection();

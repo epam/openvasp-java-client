@@ -91,7 +91,7 @@ public abstract class TransferMessage extends VaspMessage {
             return id;
         }
 
-        @JsonCreator
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         public static TransferType fromId(int id) {
             for (val item : TransferType.values()) {
                 if (item.id == id) {

@@ -8,12 +8,13 @@
     "id": "0x4dd7e1e2d5640a06ed81f155f171012f1cd48daa",
     "pk": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
     "address": {
-        "street": "Vaspstrasse",
-        "number": "3",
-        "adrline": "Building 3",
-        "postcode": "33333",
-        "town": "Vaspburg",
-        "country": "DE"
+      "street": "Vaspstrasse",
+      "number": "3",
+      "adrline": "Building 3",
+      "postcode": "33333",
+      "town": "Vaspburg",
+      "country": "DE"
     }
-  }
+  },
+  "acknowledgmentEnabled": true
 }

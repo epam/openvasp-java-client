@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public interface VaspInstance {
+public interface SessionManager {
 
     void setCustomMessageHandler(BiConsumer<VaspMessage, Session> handler);
 
@@ -28,5 +28,7 @@ public interface VaspInstance {
     List<Session> allSessions();
 
     boolean waitForNoActiveSessions(long msTimeout);
+
+    Session restoreSession(Session.State sessionState);
 
 }

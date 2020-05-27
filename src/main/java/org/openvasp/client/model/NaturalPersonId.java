@@ -60,7 +60,7 @@ public final class NaturalPersonId {
             return id;
         }
 
-        @JsonCreator
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         public static NatIdType fromId(int id) {
             for (val item : NatIdType.values()) {
                 if (item.id == id) {

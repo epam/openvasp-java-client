@@ -60,7 +60,7 @@ public final class JuridicalPersonId {
             return id;
         }
 
-        @JsonCreator
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
         public static JurIdType fromId(int id) {
             for (val item : JurIdType.values()) {
                 if (item.id == id) {

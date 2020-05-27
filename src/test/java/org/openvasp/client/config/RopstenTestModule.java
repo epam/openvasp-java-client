@@ -5,6 +5,9 @@ import lombok.val;
 import org.bouncycastle.util.encoders.Base64;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.model.InfuraConfig;
+import org.openvasp.client.service.EnsService;
+import org.openvasp.client.service.impl.EnsServiceImpl;
+import org.openvasp.client.service.impl.EnsServiceMock;
 
 import static org.openvasp.client.common.TestConstants.*;
 
@@ -30,6 +33,11 @@ public class RopstenTestModule extends VaspModule {
         val infuraSecret = ":" + infuraConfig.getSecret();
         val auth = Base64.toBase64String(infuraSecret.getBytes());
         contractHttpService.addHeader("Authorization", "Basic " + auth);
+    }
+
+    @Override
+    protected void bindEnsService() {
+        bind(EnsService.class).to(EnsServiceMock.class);
     }
 
 }
