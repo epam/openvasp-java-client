@@ -3,10 +3,11 @@ package org.openvasp.client.session.impl;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.val;
-import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.model.*;
-import org.openvasp.client.service.*;
+import org.openvasp.client.service.ContractService;
+import org.openvasp.client.service.MessageService;
+import org.openvasp.client.service.TopicEvent;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
@@ -29,16 +30,13 @@ import java.util.function.BiConsumer;
  * @author Olexandr_Bilovol@epam.com
  */
 @Singleton
-public final class SessionManagerImpl implements SessionManager, TopicListener {
+public final class SessionManagerImpl implements SessionManager {
 
     final ContractService contractService;
     final MessageService messageService;
 
     @Setter
-    BiConsumer<VaspMessage, Session> customMessageHandler;
-
-    @Setter
-    BiConsumer<VaspException, Session> customErrorHandler;
+    BiConsumer<VaspMessage, Session> messageHandler;
 
     final VaspInfo vaspInfo;
     final String handshakePrivateKey;
@@ -47,8 +45,8 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
     private final ConcurrentMap<String, OriginatorSessionImpl> originatorSessions = new ConcurrentHashMap<>();
 
     private final Lock sessionsLock = new ReentrantLock();
-    private final Condition newBeneficiarySessionsCondition = sessionsLock.newCondition();
-    private final Condition noActiveSessionsCondition = sessionsLock.newCondition();
+    private final Condition newBeneficiarySession = sessionsLock.newCondition();
+    private final Condition noActiveSessions = sessionsLock.newCondition();
 
     @Inject
     public SessionManagerImpl(
@@ -66,7 +64,7 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
                 vaspConfig.getVaspCode().toTopic(),
                 EncryptionType.ASSYMETRIC,
                 handshakePrivateKey,
-                this);
+                this::onReceiveMessage);
     }
 
     VaspCode vaspCode() {
@@ -75,52 +73,16 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
 
     @Override
     public OriginatorSession createOriginatorSession(@NonNull final TransferInfo transferInfo) {
-        val result = new OriginatorSessionImpl(this, transferInfo);
-        result.setCustomMessageHandler(customMessageHandler);
-        result.setCustomErrorHandler(customErrorHandler);
-
-        addOriginatorSession(result);
-
-        messageService.addTopicListener(
-                result.incomingMessageTopic(),
-                EncryptionType.SYMMETRIC,
-                result.sharedSecret(),
-                result);
-
-        return result;
+        return new OriginatorSessionImpl(this, transferInfo);
     }
 
-    @Override
-    public void onReceiveMessage(@NonNull final TopicEvent event) {
-        val message = event.getMessage();
+    private void onReceiveMessage(@NonNull final TopicEvent<VaspMessage> event) {
+        val message = event.getPayload();
 
         // At the level of the VASP instance we process only session requests
         if (message instanceof SessionRequest) {
-            val sessionRequest = (SessionRequest) message;
-
-            val beneficiarySession = new BeneficiarySessionImpl(this, sessionRequest);
-            beneficiarySession.setCustomMessageHandler(customMessageHandler);
-            beneficiarySession.setCustomErrorHandler(customErrorHandler);
-            beneficiarySession.addIncomingMessage(message);
-
-            addBenefeciarySession(beneficiarySession);
-
-            messageService.addTopicListener(
-                    beneficiarySession.incomingMessageTopic(),
-                    EncryptionType.SYMMETRIC,
-                    beneficiarySession.sharedSecret(),
-                    beneficiarySession);
-
-            if (customMessageHandler != null) {
-                customMessageHandler.accept(sessionRequest, beneficiarySession);
-            }
-        }
-    }
-
-    @Override
-    public void onError(@NonNull final TopicErrorEvent event) {
-        if (customErrorHandler != null) {
-            customErrorHandler.accept(event.getCause(), null);
+            val beneficiarySession = new BeneficiarySessionImpl(this, (SessionRequest) message);
+            beneficiarySession.onReceiveMessage(event);
         }
     }
 
@@ -134,7 +96,7 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
             if (beneficiarySessions.containsKey(sessionId)) {
                 return Optional.of(beneficiarySessions.get(sessionId));
             } else {
-                return newBeneficiarySessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS)
+                return newBeneficiarySession.await(msTimeout, TimeUnit.MILLISECONDS)
                         ? getBeneficiarySession(sessionId)
                         : Optional.empty();
             }
@@ -150,7 +112,7 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
         sessionsLock.lock();
         try {
             return originatorSessions.isEmpty() && beneficiarySessions.isEmpty() ||
-                    noActiveSessionsCondition.await(msTimeout, TimeUnit.MILLISECONDS);
+                    noActiveSessions.await(msTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             return false;
         } finally {
@@ -171,32 +133,30 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
         sessionsLock.lock();
         try {
             beneficiarySessions.put(beneficiarySession.sessionId(), beneficiarySession);
-            newBeneficiarySessionsCondition.signalAll();
+            newBeneficiarySession.signalAll();
         } finally {
             sessionsLock.unlock();
         }
     }
 
-    void removeOriginatorSession(@NonNull final OriginatorSessionImpl originatorSession) {
+    void removeOriginatorSession(@NonNull final OriginatorSessionImpl session) {
         sessionsLock.lock();
         try {
-            originatorSessions.remove(originatorSession.sessionId());
-            messageService.removeTopicListener(originatorSession.incomingMessageTopic(), originatorSession);
+            originatorSessions.remove(session.sessionId());
             if (originatorSessions.isEmpty() && beneficiarySessions.isEmpty()) {
-                noActiveSessionsCondition.signalAll();
+                noActiveSessions.signalAll();
             }
         } finally {
             sessionsLock.unlock();
         }
     }
 
-    void removeBenefeciarySession(@NonNull final BeneficiarySessionImpl beneficiarySession) {
+    void removeBenefeciarySession(@NonNull final BeneficiarySessionImpl session) {
         sessionsLock.lock();
         try {
-            beneficiarySessions.remove(beneficiarySession.sessionId());
-            messageService.removeTopicListener(beneficiarySession.incomingMessageTopic(), beneficiarySession);
+            beneficiarySessions.remove(session.sessionId());
             if (originatorSessions.isEmpty() && beneficiarySessions.isEmpty()) {
-                noActiveSessionsCondition.signalAll();
+                noActiveSessions.signalAll();
             }
         } finally {
             sessionsLock.unlock();
@@ -229,20 +189,18 @@ public final class SessionManagerImpl implements SessionManager, TopicListener {
     }
 
     @Override
-    public Session restoreSession(@NonNull final Session.State sessionState) {
-        return sessionState.getType() == Session.Type.ORIGINATOR
+    public Session restoreSession(@NonNull final SessionState sessionState) {
+        return sessionState.getType() == SessionState.Type.ORIGINATOR
                 ? restoreOriginatorSession(sessionState)
                 : restoreBeneficiarySession(sessionState);
     }
 
-    private Session restoreOriginatorSession(final Session.State sessionState) {
-        // TODO: to be implemented
-        throw new UnsupportedOperationException();
+    private Session restoreOriginatorSession(@NonNull final SessionState sessionState) {
+        return new OriginatorSessionImpl(this, sessionState);
     }
 
-    private Session restoreBeneficiarySession(final Session.State sessionState) {
-        // TODO: to be implemented
-        throw new UnsupportedOperationException();
+    private Session restoreBeneficiarySession(@NonNull final SessionState sessionState) {
+        return new BeneficiarySessionImpl(this, sessionState);
     }
 
 }

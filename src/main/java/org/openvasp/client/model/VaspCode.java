@@ -6,13 +6,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.io.Serializable;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * @author Olexandr_Bilovol@epam.com
  */
 @EqualsAndHashCode(of = {"data"})
-public final class VaspCode {
+public final class VaspCode implements Serializable {
 
     private static final String VASP_CODE_FORMAT_ERROR = "VASP code should be a hexadecimal string of the length 8";
 

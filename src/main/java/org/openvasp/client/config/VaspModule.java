@@ -7,6 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.api.whisper.WhisperApi;
 import org.openvasp.client.api.whisper.WhisperAsyncApi;
 import org.openvasp.client.api.whisper.impl.WhisperApiImpl;
+import org.openvasp.client.common.ExceptionHandler;
+import org.openvasp.client.common.ExceptionHandlerDelegate;
 import org.openvasp.client.common.annotation.ContractNode;
 import org.openvasp.client.common.annotation.WhisperNode;
 import org.openvasp.client.model.VaspCode;
@@ -70,6 +72,7 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         super.configure();
 
         bind(VaspConfig.class).toInstance(vaspConfig);
+        bind(ExceptionHandler.class).toInstance(new ExceptionHandlerDelegate());
 
         bind(Web3jService.class).annotatedWith(WhisperNode.class).toInstance(whisperHttpService);
         bind(Web3jService.class).annotatedWith(ContractNode.class).toInstance(contractHttpService);
@@ -83,13 +86,9 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         bindEnsService();
         bindContractService();
         bindSignService();
+        bind(WhisperService.class).to(WhisperServiceImpl.class);
         bind(MessageService.class).to(MessageServiceImpl.class);
-
-        if (Boolean.TRUE.equals(vaspConfig.getAcknowledgmentEnabled())) {
-            bind(ConfirmationService.class).to(ConfirmationServiceImpl.class);
-        } else {
-            bind(ConfirmationService.class).to(EmptyConfirmationServiceImpl.class);
-        }
+        bind(ConfirmationService.class).to(ConfirmationServiceImpl.class);
 
         bind(SessionManager.class).to(SessionManagerImpl.class);
     }

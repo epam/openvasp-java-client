@@ -6,9 +6,9 @@ import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openvasp.client.VaspInstance;
+import org.openvasp.client.common.ExceptionHandler;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
-import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
 import org.openvasp.client.session.Session;
@@ -19,8 +19,8 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openvasp.client.common.TestConstants.*;
@@ -57,9 +57,9 @@ public abstract class BaseRecordingTransferIT {
     @SneakyThrows
     public void setUp() {
         instance1 = new VaspInstance(module1);
-        instance1.startVaspInstance();
+        instance1.startSessionManager();
         instance2 = new VaspInstance(module2);
-        instance2.startVaspInstance();
+        instance2.startSessionManager();
         Thread.sleep(WAIT_TIMEOUT_3);
     }
 
@@ -73,15 +73,23 @@ public abstract class BaseRecordingTransferIT {
     public void checkCallbackStyleTransfer() {
         val transferLog = Collections.synchronizedList(new ArrayList<TransferLogRecord>());
         val messageHandler = new RecordingTestHandler(transferLog);
-        final BiConsumer<VaspException, Session> errorLogger =
-                (exception, session) -> {
+
+        final ExceptionHandler exceptionHandler =
+                (exception) -> {
                     log.error("Error while executing scenario: ", exception);
                 };
 
-        instance1.setCustomMessageHandler(messageHandler);
-        instance1.setCustomErrorHandler(errorLogger);
-        instance2.setCustomMessageHandler(messageHandler);
-        instance2.setCustomErrorHandler(errorLogger);
+        final Consumer<VaspMessage> confirmationHandler =
+                (message) -> {
+                    log.error("Message ID = {} confirmed", message.getHeader().getMessageId());
+                };
+
+        instance1.setMessageHandler(messageHandler);
+        instance1.setExceptionHandler(exceptionHandler);
+        instance1.setConfirmationHandler(confirmationHandler);
+        instance2.setMessageHandler(messageHandler);
+        instance2.setExceptionHandler(exceptionHandler);
+        instance2.setConfirmationHandler(confirmationHandler);
 
         // Initiate transfer instance1 => instance2
         val originatorSessionA = instance1.createOriginatorSession(transferA);
@@ -91,7 +99,7 @@ public abstract class BaseRecordingTransferIT {
         assertThat(instance1.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
         assertThat(instance2.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
 
-        checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_1, TestConstants.VASP_CODE_2, transferA);
+        checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_1, TestConstants.VASP_CODE_2);
 
         // Clear transfer log before the second transfer
         transferLog.clear();
@@ -104,7 +112,7 @@ public abstract class BaseRecordingTransferIT {
         assertThat(instance2.waitForNoActiveSessions(WAIT_TIMEOUT_1)).isTrue();
         assertThat(instance1.waitForNoActiveSessions(WAIT_TIMEOUT_2)).isTrue();
 
-        checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_2, TestConstants.VASP_CODE_1, transferB);
+        checkTransfer(messageHandler.transferLog, TestConstants.VASP_CODE_2, TestConstants.VASP_CODE_1);
     }
 
     public void checkWaitingStyleTransfer() {
@@ -120,10 +128,10 @@ public abstract class BaseRecordingTransferIT {
         val beneficiarySession = beneficiarySessionOpt.get();
 
         // The 1st incoming message
-        assertThat(beneficiarySession.incomingMessages()).hasSize(1);
-        assertThat(beneficiarySession.lastIncomingMessage()).isInstanceOf(SessionRequest.class);
-        val sessionRequest = beneficiarySession.lastIncomingMessage(SessionRequest.class);
-        transferLog.add(new TransferLogRecord(beneficiarySession.vaspCode(), sessionRequest));
+        val message = beneficiarySession.takeIncomingMessage(WAIT_TIMEOUT_2);
+        assertThat(message).isNotEmpty();
+        assertThat(message.get()).isInstanceOf(SessionRequest.class);
+        transferLog.add(new TransferLogRecord(beneficiarySession.vaspCode(), message.get().asSessionRequest()));
         // The 1st response
         val sessionReply = new SessionReply();
         sessionReply.getHeader().setResponseCode(VaspResponseCode.OK.id);
@@ -132,21 +140,20 @@ public abstract class BaseRecordingTransferIT {
         checkWaitingStyleStep(
                 originatorSession,
                 SessionReply.class,
-                1,
                 transferLog,
                 (request, session) -> {
                     val response = new TransferRequest();
+                    val transferInfo = session.transferInfo();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(session.transferInfo().getOriginator());
-                    response.setBeneficiary(session.transferInfo().getBeneficiary());
-                    response.setTransfer(session.transferInfo().getTransfer());
+                    response.setOriginator(transferInfo.getOriginator());
+                    response.setBeneficiary(transferInfo.getBeneficiary());
+                    response.setTransfer(transferInfo.getTransfer());
                     return response;
                 });
 
         checkWaitingStyleStep(
                 beneficiarySession,
                 TransferRequest.class,
-                2,
                 transferLog,
                 (request, session) -> {
                     val response = new TransferReply();
@@ -160,14 +167,14 @@ public abstract class BaseRecordingTransferIT {
         checkWaitingStyleStep(
                 originatorSession,
                 TransferReply.class,
-                2,
                 transferLog,
                 (request, session) -> {
                     val response = new TransferDispatch();
+                    val transferInfo = session.transferInfo();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(session.transferInfo().getOriginator());
-                    response.setBeneficiary(session.transferInfo().getBeneficiary());
-                    response.setTransfer(session.transferInfo().getTransfer());
+                    response.setOriginator(transferInfo.getOriginator());
+                    response.setBeneficiary(transferInfo.getBeneficiary());
+                    response.setTransfer(transferInfo.getTransfer());
                     response.setTx(new TransferMessage.Transaction());
                     response.getTx().setDateTime(ZonedDateTime.now());
                     return response;
@@ -176,22 +183,21 @@ public abstract class BaseRecordingTransferIT {
         checkWaitingStyleStep(
                 beneficiarySession,
                 TransferDispatch.class,
-                3,
                 transferLog,
                 (request, session) -> {
                     val response = new TransferConfirmation();
+                    val transferInfo = session.transferInfo();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(session.transferInfo().getOriginator());
-                    response.setBeneficiary(session.transferInfo().getBeneficiary());
-                    response.setTransfer(session.transferInfo().getTransfer());
-                    response.setTx(session.transferInfo().getTx());
+                    response.setOriginator(transferInfo.getOriginator());
+                    response.setBeneficiary(transferInfo.getBeneficiary());
+                    response.setTransfer(transferInfo.getTransfer());
+                    response.setTx(transferInfo.getTx());
                     return response;
                 });
 
         checkWaitingStyleStep(
                 originatorSession,
                 TransferConfirmation.class,
-                3,
                 transferLog,
                 (request, session) -> {
                     val response = new TerminationMessage();
@@ -202,21 +208,19 @@ public abstract class BaseRecordingTransferIT {
         checkWaitingStyleStep(
                 beneficiarySession,
                 TerminationMessage.class,
-                4,
                 transferLog,
                 (request, session) -> null);
 
         originatorSession.remove();
         beneficiarySession.remove();
 
-        checkTransfer(transferLog, TestConstants.VASP_CODE_1, TestConstants.VASP_CODE_2, transferA);
+        checkTransfer(transferLog, TestConstants.VASP_CODE_1, TestConstants.VASP_CODE_2);
     }
 
     private void checkTransfer(
             final List<TransferLogRecord> transferLog,
             final VaspCode originatorVaspCode,
-            final VaspCode beneficiaryVaspCode,
-            final TransferInfo transferInfo) {
+            final VaspCode beneficiaryVaspCode) {
 
         assertThat(transferLog).hasSize(7);
 
@@ -274,17 +278,18 @@ public abstract class BaseRecordingTransferIT {
     void checkWaitingStyleStep(
             @NonNull final Session session,
             @NonNull final Class<T> expectedMessageClass,
-            final int expectedIncomingMessageCount,
             @NonNull final List<TransferLogRecord> transferLog,
             @NonNull final BiFunction<T, Session, U> responseAction) {
 
-        val messageOpt = session.waitForNewMessage(expectedMessageClass, WAIT_TIMEOUT_2);
+        val messageOpt = session.takeIncomingMessage(WAIT_TIMEOUT_2);
         assertThat(messageOpt).isNotEmpty();
-        assertThat(session.incomingMessages()).hasSize(expectedIncomingMessageCount);
-        assertThat(session.lastIncomingMessage()).isInstanceOf(expectedMessageClass);
         val message = messageOpt.get();
+        assertThat(message).isInstanceOf(expectedMessageClass);
         transferLog.add(new TransferLogRecord(session.vaspCode(), message));
-        val response = responseAction.apply(message, session);
+
+        @SuppressWarnings("unchecked")
+        val response = responseAction.apply((T) message, session);
+
         if (response != null) {
             session.sendMessage(response);
         }

@@ -2,29 +2,27 @@ package org.openvasp.client;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.openvasp.client.api.whisper.WhisperApi;
 import org.openvasp.client.api.whisper.WhisperSymKeyApi;
-import org.openvasp.client.common.VaspException;
-import org.openvasp.client.config.VaspConfig;
+import org.openvasp.client.common.ExceptionHandler;
+import org.openvasp.client.common.ExceptionHandlerDelegate;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.*;
-import org.openvasp.client.service.ConfirmationService;
-import org.openvasp.client.service.ContractService;
-import org.openvasp.client.service.MessageService;
-import org.openvasp.client.service.TopicListener;
+import org.openvasp.client.service.*;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
 import org.openvasp.client.session.SessionManager;
+import org.openvasp.client.session.impl.SessionState;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -43,99 +41,89 @@ public final class VaspInstance implements
     private final VaspModule module;
     private final Injector injector;
 
-    @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final WhisperApi whisperApi = injector.getInstance(WhisperApi.class);
+    private final WhisperApi whisperApi;
+    private final ContractService contractService;
+    private final WhisperService whisperService;
+    private final MessageService messageService;
+    private final ConfirmationService confirmationService;
+    private SessionManager sessionManager;
 
-    @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final ContractService contractService = injector.getInstance(ContractService.class);
-
-    @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final MessageService messageService = injector.getInstance(MessageService.class);
-
-    @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final ConfirmationService confirmationService = injector.getInstance(ConfirmationService.class);
-
-    @Getter(value = AccessLevel.PRIVATE, lazy = true)
-    private final SessionManager sessionManager = injector.getInstance(SessionManager.class);
-
-    public VaspInstance(@NonNull final VaspModule module) {
+    public VaspInstance(@NonNull final VaspModule module, boolean autoStartSessionManager) {
         this.module = module;
         this.injector = Guice.createInjector(module);
-        // Create and start ConfirmationService
-        getConfirmationService();
-        // Create and start MessageService
-        getMessageService();
+        this.whisperApi = injector.getInstance(WhisperApi.class);
+        this.contractService = injector.getInstance(ContractService.class);
+        this.whisperService = injector.getInstance(WhisperService.class);
+        this.messageService = injector.getInstance(MessageService.class);
+        this.confirmationService = injector.getInstance(ConfirmationService.class);
+
+        if (autoStartSessionManager) {
+            this.sessionManager = injector.getInstance(SessionManager.class);
+        }
     }
 
-    public VaspInstance(@NonNull final VaspConfig vaspConfig) {
-        this(new VaspModule(vaspConfig));
+    public VaspInstance(@NonNull final VaspModule module) {
+        this(module, true);
     }
 
-    public void logVersion() {
-        log.info("OpenVASP client, v{}, VASP code: {}", VERSION, module.getVaspCode());
-    }
-
-    public void startVaspInstance() {
+    public void startSessionManager() {
         // Start listening for SessionRequest's
-        getSessionManager();
+        sessionManager = injector.getInstance(SessionManager.class);
     }
 
     @Override
     @SneakyThrows
     public void close() {
-        getMessageService().close();
-        getConfirmationService().close();
+        whisperService.close();
         module.close();
     }
 
-    @Override
     public void shutdown() {
-        getMessageService().shutdown();
+        whisperService.shutdown();
     }
 
-    @Override
     public boolean waitForTermination(final long msTimeout) {
-        return getMessageService().waitForTermination(msTimeout);
+        return whisperService.waitForTermination(msTimeout);
     }
 
     @Override
     public String newSymKey() {
-        return getWhisperApi().newSymKey();
+        return whisperApi.newSymKey();
     }
 
     @Override
     public String generateSymKeyFromPassword(String password) {
-        return getWhisperApi().generateSymKeyFromPassword(password);
+        return whisperApi.generateSymKeyFromPassword(password);
     }
 
     @Override
     public String addSymKey(String key) {
-        return getWhisperApi().addSymKey(key);
+        return whisperApi.addSymKey(key);
     }
 
     @Override
     public Boolean deleteSymKey(String symKeyId) {
-        return getWhisperApi().deleteSymKey(symKeyId);
+        return whisperApi.deleteSymKey(symKeyId);
     }
 
     @Override
     public Boolean hasSymKey(String symKeyId) {
-        return getWhisperApi().hasSymKey(symKeyId);
+        return whisperApi.hasSymKey(symKeyId);
     }
 
     @Override
     public String getSymKey(String symKeyId) {
-        return getWhisperApi().getSymKey(symKeyId);
+        return whisperApi.getSymKey(symKeyId);
     }
 
     @Override
     public VaspContractInfo getVaspContractInfo(@NonNull final EthAddr vaspSmartContractAddress) {
-        return getContractService().getVaspContractInfo(vaspSmartContractAddress);
+        return contractService.getVaspContractInfo(vaspSmartContractAddress);
     }
 
     @Override
     public VaspContractInfo getVaspContractInfo(@NonNull final VaspCode vaspCode) {
-        return getContractService().getVaspContractInfo(vaspCode);
+        return contractService.getVaspContractInfo(vaspCode);
     }
 
     @Override
@@ -145,52 +133,55 @@ public final class VaspInstance implements
             @NonNull final String key,
             @NonNull final VaspMessage message) {
 
-        getMessageService().send(topic, encType, key, message);
+        messageService.send(topic, encType, key, message);
     }
 
     @Override
-    public void addTopicListener(
+    public long addTopicListener(
             @NonNull final Topic topic,
             @NonNull final EncryptionType encType,
             @NonNull final String key,
-            @NonNull final TopicListener listener) {
+            @NonNull final TopicListener<VaspMessage> listener) {
 
-        getMessageService().addTopicListener(topic, encType, key, listener);
+        return messageService.addTopicListener(topic, encType, key, listener);
     }
 
     @Override
-    public void removeTopicListener(@NonNull final Topic topic, @NonNull final TopicListener listener) {
-        getMessageService().removeTopicListener(topic, listener);
-    }
+    public void removeTopicListener(
+            @NonNull final Topic topic,
+            final long listenerId) {
 
-    @Override
-    public void removeTopicListeners(@NonNull final Topic topic) {
-        getMessageService().removeTopicListeners(topic);
+        messageService.removeTopicListener(topic, listenerId);
     }
 
     @Override
     public void registerForConfirmation(@NonNull final VaspMessage message) {
-        getConfirmationService().registerForConfirmation(message);
+        confirmationService.registerForConfirmation(message);
+    }
+
+    @Override
+    public void setConfirmationHandler(Consumer<VaspMessage> handler) {
+        confirmationService.setConfirmationHandler(handler);
     }
 
     @Override
     public void confirmReceipt(@NonNull final VaspMessage message) {
-        getConfirmationService().confirmReceipt(message);
+        confirmationService.confirmReceipt(message);
     }
 
     @Override
-    public void setCustomMessageHandler(final BiConsumer<VaspMessage, Session> handler) {
-        getSessionManager().setCustomMessageHandler(handler);
+    public void setMessageHandler(final BiConsumer<VaspMessage, Session> handler) {
+        sessionManager.setMessageHandler(handler);
     }
 
-    @Override
-    public void setCustomErrorHandler(final BiConsumer<VaspException, Session> handler) {
-        getSessionManager().setCustomErrorHandler(handler);
+    public void setExceptionHandler(final ExceptionHandler handler) {
+        val delegateHandler = (ExceptionHandlerDelegate) injector.getInstance(ExceptionHandler.class);
+        delegateHandler.setDelegate(handler);
     }
 
     @Override
     public OriginatorSession createOriginatorSession(@NonNull final TransferInfo transferInfo) {
-        return getSessionManager().createOriginatorSession(transferInfo);
+        return sessionManager.createOriginatorSession(transferInfo);
     }
 
     @Override
@@ -198,32 +189,32 @@ public final class VaspInstance implements
             @NonNull final String sessionId,
             final long msTimeout) {
 
-        return getSessionManager().waitForBeneficiarySession(sessionId, msTimeout);
+        return sessionManager.waitForBeneficiarySession(sessionId, msTimeout);
     }
 
     @Override
     public Optional<OriginatorSession> getOriginatorSession(@NonNull final String sessionId) {
-        return getSessionManager().getOriginatorSession(sessionId);
+        return sessionManager.getOriginatorSession(sessionId);
     }
 
     @Override
     public Optional<BeneficiarySession> getBeneficiarySession(@NonNull final String sessionId) {
-        return getSessionManager().getBeneficiarySession(sessionId);
+        return sessionManager.getBeneficiarySession(sessionId);
     }
 
     @Override
     public List<Session> allSessions() {
-        return getSessionManager().allSessions();
+        return sessionManager.allSessions();
     }
 
     @Override
     public boolean waitForNoActiveSessions(final long msTimeout) {
-        return getSessionManager().waitForNoActiveSessions(msTimeout);
+        return sessionManager.waitForNoActiveSessions(msTimeout);
     }
 
     @Override
-    public Session restoreSession(Session.State sessionState) {
-        return getSessionManager().restoreSession(sessionState);
+    public Session restoreSession(SessionState sessionState) {
+        return sessionManager.restoreSession(sessionState);
     }
 
 }

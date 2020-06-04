@@ -24,7 +24,6 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
 
         if (message instanceof SessionReply) {
             val response = new TransferRequest();
-            response.getHeader().setResponseCode(OK.id);
             response.setOriginator(session.transferInfo().getOriginator());
             response.setBeneficiary(session.transferInfo().getBeneficiary());
             response.setTransfer(session.transferInfo().getTransfer());
@@ -34,7 +33,6 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
         if (message instanceof TransferRequest) {
             val request = (TransferRequest) message;
             val response = new TransferReply();
-            response.getHeader().setResponseCode(OK.id);
             response.setOriginator(request.getOriginator());
             response.setBeneficiary(request.getBeneficiary());
             response.setTransfer(request.getTransfer());
@@ -43,7 +41,6 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
 
         if (message instanceof TransferReply) {
             val response = new TransferDispatch();
-            response.getHeader().setResponseCode(OK.id);
             response.setOriginator(session.transferInfo().getOriginator());
             response.setBeneficiary(session.transferInfo().getBeneficiary());
             response.setTransfer(session.transferInfo().getTransfer());
@@ -53,7 +50,6 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
 
         if (message instanceof TransferDispatch) {
             val response = new TransferConfirmation();
-            response.getHeader().setResponseCode(OK.id);
             response.setOriginator(session.transferInfo().getOriginator());
             response.setBeneficiary(session.transferInfo().getBeneficiary());
             response.setTransfer(session.transferInfo().getTransfer());
@@ -63,7 +59,6 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
 
         if (message instanceof TransferConfirmation) {
             val response = new TerminationMessage();
-            response.getHeader().setResponseCode(OK.id);
             onTransferConfirmation((TransferConfirmation) message, response, session);
             session.remove();
         }

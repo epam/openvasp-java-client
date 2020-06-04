@@ -1,8 +1,8 @@
 package org.openvasp.client.session;
 
-import org.openvasp.client.common.VaspException;
 import org.openvasp.client.model.TransferInfo;
 import org.openvasp.client.model.VaspMessage;
+import org.openvasp.client.session.impl.SessionState;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,9 +13,7 @@ import java.util.function.BiConsumer;
  */
 public interface SessionManager {
 
-    void setCustomMessageHandler(BiConsumer<VaspMessage, Session> handler);
-
-    void setCustomErrorHandler(BiConsumer<VaspException, Session> handler);
+    void setMessageHandler(BiConsumer<VaspMessage, Session> handler);
 
     OriginatorSession createOriginatorSession(TransferInfo transferInfo);
 
@@ -29,6 +27,6 @@ public interface SessionManager {
 
     boolean waitForNoActiveSessions(long msTimeout);
 
-    Session restoreSession(Session.State sessionState);
+    Session restoreSession(SessionState sessionState);
 
 }

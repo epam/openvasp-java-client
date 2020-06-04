@@ -3,6 +3,7 @@ package org.openvasp.client.model;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.VaspException;
 import org.openvasp.client.common.VaspUtils;
@@ -43,6 +44,13 @@ public abstract class VaspMessage {
         checkState(vaspInfo != null);
         checkState(vaspInfo.getVaspId() != null);
         return vaspInfo.getVaspCode();
+    }
+
+    @JsonIgnore
+    public Topic getConfirmationTopic() {
+        checkState(header != null);
+        checkState(header.messageId != null);
+        return new Topic("0x" + StringUtils.right(header.messageId, 8));
     }
 
     public void validate() {
@@ -150,7 +158,7 @@ public abstract class VaspMessage {
         private String sessionId;
 
         @JsonProperty("code")
-        private String responseCode;
+        private String responseCode = VaspResponseCode.OK.id;
 
         public void validate(@NonNull final VaspMessage source) {
             if (Numeric.cleanHexPrefix(messageId).length() != MSG_ID_LENGTH || !VaspUtils.isValidHex(messageId)) {
@@ -177,32 +185,36 @@ public abstract class VaspMessage {
             final List<JuridicalPersonId> jur,
             final String bic) {
 
-        // whitepaper sections 7.10.1 and 7.11.2, rule 2)
-        if ((null != birth || null != nat) && (null != jur || null != bic)) {
-            throw new VaspValidationException(source,
-                    "Message rules not met - [birth] or [nat] is allowed, if neither [jur] nor [bic] is present");
-        }
-
-        // whitepaper sections 7.10.1 and 7.11.2, rule 3)
-        if (null != jur && (null != birth || null != nat || null != bic)) {
-            throw new VaspValidationException(source,
-                    "Message rules not met - [jur] is allowed, if neither [birth] nor [nat] nor [bic] is present");
-        }
-
-        // whitepaper sections 7.10.1 and 7.11.2, rule 4)
-        if (null != bic && (null != birth || null != nat || null != jur)) {
-            throw new VaspValidationException(source,
-                    "Message rules not met - [bic] is allowed, if neither [birth] nor [nat] nor [jur] is present");
-        }
-
-        if (null != nat) {
-            for (NaturalPersonId natPerson : nat)
-                natPerson.validate(source);
-        }
-
-        if (null != jur) {
-            for (JuridicalPersonId jurPerson : jur)
+        if (birth != null || (nat != null && !nat.isEmpty())) {
+            // Natural person
+            if (StringUtils.isNotEmpty(bic)) {
+                throw new VaspValidationException(source,
+                        "[bic] must be empty for Natural Person");
+            }
+            if (jur != null && !jur.isEmpty()) {
+                throw new VaspValidationException(source,
+                        "[jur] must be empty for Natural Person");
+            }
+            if (nat != null) {
+                for (val natPerson : nat) {
+                    natPerson.validate(source);
+                }
+            }
+        } else if (jur != null) {
+            // Juridical person
+            if (StringUtils.isNotEmpty(bic)) {
+                throw new VaspValidationException(source,
+                        "[bic] must be empty for Juridical Person");
+            }
+            for (JuridicalPersonId jurPerson : jur) {
                 jurPerson.validate(source);
+            }
+        } else {
+            // Bank
+            if (StringUtils.isEmpty(bic)) {
+                throw new VaspValidationException(source,
+                        "[bic] must be present for Bank");
+            }
         }
     }
 

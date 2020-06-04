@@ -4,19 +4,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.val;
-import org.openvasp.client.common.VaspException;
 import org.openvasp.client.common.VaspUtils;
-import org.openvasp.client.crypto.ECDHKeyPair;
 import org.openvasp.client.model.*;
-import org.openvasp.client.service.*;
+import org.openvasp.client.service.ContractService;
+import org.openvasp.client.service.MessageService;
+import org.openvasp.client.service.TopicEvent;
 import org.openvasp.client.session.Session;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -26,21 +23,16 @@ import java.util.function.BiConsumer;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-abstract class AbstractSession implements Session, TopicListener {
+abstract class AbstractSession implements Session {
 
     final SessionManagerImpl owner;
 
     @Getter
     @Setter
-    private BiConsumer<VaspMessage, Session> customMessageHandler;
-
-    @Getter
-    @Setter
-    private BiConsumer<VaspException, Session> customErrorHandler;
+    private BiConsumer<VaspMessage, Session> messageHandler;
 
     private final String sessionId;
 
-    ECDHKeyPair sessionKeyPair;
     String sharedSecret;
 
     Topic topicA;
@@ -49,13 +41,9 @@ abstract class AbstractSession implements Session, TopicListener {
     TransferInfo transferInfo;
     VaspInfo peerVaspInfo;
 
-    private final ConcurrentMap<String, Object> attrs = new ConcurrentHashMap<>();
-
-    private final List<VaspMessage> incomingMessages = Collections.synchronizedList(new ArrayList<>());
-    private final Lock incomingMessagesLock = new ReentrantLock();
-    private final Condition newMessageCondition = incomingMessagesLock.newCondition();
-
-    private final List<VaspException> errors = Collections.synchronizedList(new ArrayList<>());
+    private final Queue<VaspMessage> incomingQueue = new LinkedList<>();
+    private final Lock incomingQueueLock = new ReentrantLock();
+    private final Condition hasNewMessages = incomingQueueLock.newCondition();
 
     AbstractSession(@NonNull final SessionManagerImpl owner, @NonNull final String sessionId) {
         this.owner = owner;
@@ -93,21 +81,9 @@ abstract class AbstractSession implements Session, TopicListener {
     @Override
     public abstract VaspCode peerVaspCode();
 
-    abstract String sharedSecret();
-
     abstract Topic incomingMessageTopic();
 
     abstract Topic outgoingMessageTopic();
-
-    @Override
-    public List<VaspMessage> incomingMessages() {
-        return Collections.unmodifiableList(incomingMessages);
-    }
-
-    @Override
-    public List<VaspException> errors() {
-        return Collections.unmodifiableList(errors);
-    }
 
     @Override
     public void sendMessage(@NonNull final VaspMessage message) {
@@ -118,65 +94,62 @@ abstract class AbstractSession implements Session, TopicListener {
         messageService().send(
                 outgoingMessageTopic(),
                 EncryptionType.SYMMETRIC,
-                sharedSecret(),
+                sharedSecret,
                 message);
     }
 
-    @Override
-    public void onReceiveMessage(@NonNull final TopicEvent event) {
-        addIncomingMessage(event.getMessage());
-        if (customMessageHandler != null) {
-            customMessageHandler.accept(event.getMessage(), this);
-        }
-    }
-
-    @Override
-    public void onError(@NonNull final TopicErrorEvent event) {
-        errors.add(event.getCause());
-        if (customErrorHandler != null) {
-            customErrorHandler.accept(event.getCause(), this);
-        }
-    }
-
-    void addIncomingMessage(@NonNull final VaspMessage message) {
-        incomingMessagesLock.lock();
+    void addToIncomingQueue(@NonNull final VaspMessage message) {
+        incomingQueueLock.lock();
         try {
-            incomingMessages.add(message);
-            newMessageCondition.signalAll();
+            incomingQueue.add(message);
+            hasNewMessages.signalAll();
         } finally {
-            incomingMessagesLock.unlock();
+            incomingQueueLock.unlock();
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends VaspMessage> Optional<T> waitForNewMessage(
-            @NonNull final Class<T> messageClass,
-            final long timeout) {
-
-        incomingMessagesLock.lock();
+    public Optional<VaspMessage> takeIncomingMessage(long timeout) {
+        incomingQueueLock.lock();
         try {
-            return newMessageCondition.await(timeout, TimeUnit.MILLISECONDS)
-                    ? Optional.of((T) incomingMessages.get(incomingMessages.size() - 1))
-                    : Optional.empty();
+            if (!incomingQueue.isEmpty()) {
+                return Optional.of(incomingQueue.remove());
+            } else {
+                return hasNewMessages.await(timeout, TimeUnit.MILLISECONDS)
+                        ? Optional.of(incomingQueue.remove())
+                        : Optional.empty();
+            }
         } catch (InterruptedException ex) {
             return Optional.empty();
         } finally {
-            incomingMessagesLock.unlock();
+            incomingQueueLock.unlock();
+        }
+    }
+
+    void onReceiveMessage(@NonNull final TopicEvent<VaspMessage> event) {
+        if (messageHandler != null) {
+            // Process the message immediately
+            messageHandler.accept(event.getPayload(), this);
+        } else {
+            // Put the message into incomingQueue for further processing via takeIncomingMessage
+            addToIncomingQueue(event.getPayload());
         }
     }
 
     @Override
-    public State getState() {
-        val builder = SessionStateImpl.builder();
+    public SessionState getState() {
+        val builder = SessionState.builder();
         buildState(builder);
         return builder.build();
     }
 
-    void buildState(final SessionStateImpl.SessionStateImplBuilder builder) {
+    void buildState(final SessionState.SessionStateBuilder builder) {
         builder.id(sessionId)
                 .incomingTopic(incomingMessageTopic())
-                .outgoingTopic(outgoingMessageTopic());
+                .outgoingTopic(outgoingMessageTopic())
+                .sharedSecret(sharedSecret)
+                .transferInfo(transferInfo)
+                .peerVaspInfo(peerVaspInfo);
     }
 
 }
