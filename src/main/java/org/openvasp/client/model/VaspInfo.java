@@ -48,7 +48,6 @@ public final class VaspInfo {
 
     public void validate(@NonNull final VaspMessage source) {
         address.validate(source);
-        VaspMessage.checkRules(source, birth, nat, jur, bic);
     }
 
 }

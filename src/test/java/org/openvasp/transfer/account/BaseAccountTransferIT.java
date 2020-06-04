@@ -6,23 +6,22 @@ import lombok.val;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openvasp.client.VaspInstance;
+import org.openvasp.client.common.ExceptionHandler;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.common.TestConstants;
-import org.openvasp.client.common.VaspException;
 import org.openvasp.client.config.VaspModule;
 import org.openvasp.client.model.TransferInfo;
 import org.openvasp.client.model.VaspCode;
-import org.openvasp.client.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openvasp.client.common.TestConstants.WAIT_TIMEOUT_1;
+import static org.openvasp.client.common.TestConstants.WAIT_TIMEOUT_3;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -65,26 +64,32 @@ public abstract class BaseAccountTransferIT {
     public void setUp() {
         this.accountService = new AccountService();
         val messageHandler = new AccountTransferHandler(accountService);
-        final BiConsumer<VaspException, Session> errorLogger = 
-                (exception, session) -> { log.error("Error while executing scenario: ", exception); };
+        final ExceptionHandler exceptionHandler =
+                (exception) -> {
+                    log.error("Error while executing scenario: ", exception);
+                };
 
         instance1 = new VaspInstance(module1);
-        instance1.setCustomMessageHandler(messageHandler);
-        instance1.setCustomErrorHandler(errorLogger);
+        instance1.setMessageHandler(messageHandler);
+        instance1.setExceptionHandler(exceptionHandler);
 
         instance2 = new VaspInstance(module2);
-        instance2.setCustomMessageHandler(messageHandler);
-        instance2.setCustomErrorHandler(errorLogger);
+        instance2.setMessageHandler(messageHandler);
+        instance2.setExceptionHandler(exceptionHandler);
 
         instance3 = new VaspInstance(module3);
-        instance3.setCustomMessageHandler(messageHandler);
-        instance3.setCustomErrorHandler(errorLogger);
+        instance3.setMessageHandler(messageHandler);
+        instance3.setExceptionHandler(exceptionHandler);
 
         instanceMap.put(module1.getVaspCode(), instance1);
         instanceMap.put(module2.getVaspCode(), instance2);
         instanceMap.put(module3.getVaspCode(), instance3);
 
-        Thread.sleep(1000);
+        instance1.startSessionManager();
+        instance2.startSessionManager();
+        instance3.startSessionManager();
+
+        Thread.sleep(WAIT_TIMEOUT_3);
         log.debug("Vasp instances are ready");
     }
 

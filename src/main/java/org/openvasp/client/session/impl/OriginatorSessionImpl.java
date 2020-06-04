@@ -15,6 +15,9 @@ import static org.openvasp.client.model.VaspResponseCode.OK;
  */
 final class OriginatorSessionImpl extends AbstractSession implements OriginatorSession {
 
+    private final long topicListenerId;
+    private final String sessionPublicKey;
+
     OriginatorSessionImpl(
             @NonNull final SessionManagerImpl owner,
             @NonNull final TransferInfo transferInfo) {
@@ -26,19 +29,50 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
         this.transferInfo = transferInfo;
         this.topicA = Topic.newRandom();
         this.topicB = null;
-        this.sessionKeyPair = ECDHKeyPair.generateKeyPair();
+        val sessionKeyPair = ECDHKeyPair.generateKeyPair();
         val contract = contractService().getVaspContractInfo(peerVaspCode());
         this.sharedSecret = sessionKeyPair.generateSharedSecretHex(contract.getHandshakeKey());
+        this.sessionPublicKey = sessionKeyPair.getPublicKey();
+
+        this.setMessageHandler(owner.messageHandler);
+
+        owner.addOriginatorSession(this);
+
+        this.topicListenerId = owner.messageService.addTopicListener(
+                incomingMessageTopic(),
+                EncryptionType.SYMMETRIC,
+                sharedSecret,
+                this::onReceiveMessage);
+    }
+
+    OriginatorSessionImpl(
+            @NonNull final SessionManagerImpl owner,
+            @NonNull final SessionState sessionState) {
+
+        super(owner, sessionState.getId());
+
+        // 6 items to init, the same as in BeneficiarySessionImpl
+        this.peerVaspInfo = sessionState.getPeerVaspInfo();
+        this.transferInfo = sessionState.getTransferInfo();
+        this.topicA = sessionState.getIncomingTopic();
+        this.topicB = sessionState.getOutgoingTopic();
+        this.sharedSecret = sessionState.getSharedSecret();
+        this.sessionPublicKey = sessionState.getSessionPublicKey();
+
+        this.setMessageHandler(owner.messageHandler);
+
+        owner.addOriginatorSession(this);
+
+        this.topicListenerId = owner.messageService.addTopicListener(
+                incomingMessageTopic(),
+                EncryptionType.SYMMETRIC,
+                sharedSecret,
+                this::onReceiveMessage);
     }
 
     @Override
     public VaspCode peerVaspCode() {
         return transferInfo.getBeneficiary().getVaan().getVaspCode();
-    }
-
-    @Override
-    String sharedSecret() {
-        return sharedSecret;
     }
 
     @Override
@@ -64,7 +98,7 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
 
             sessionRequest.setHandshake(SessionMessage.Handshake.builder()
                     .topicA(topicA)
-                    .sessionPublicKey(sessionKeyPair.getPublicKey())
+                    .sessionPublicKey(sessionPublicKey)
                     .build());
 
             val contract = contractService().getVaspContractInfo(peerVaspCode());
@@ -94,8 +128,8 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
     }
 
     @Override
-    public void onReceiveMessage(@NonNull TopicEvent event) {
-        val message = event.getMessage();
+    void onReceiveMessage(@NonNull final TopicEvent<VaspMessage> event) {
+        val message = event.getPayload();
         val messageCode = message.getResponseCode();
 
         if (message instanceof SessionReply) {
@@ -118,13 +152,15 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
 
     @Override
     public void remove() {
+        owner.messageService.removeTopicListener(incomingMessageTopic(), topicListenerId);
         owner.removeOriginatorSession(this);
     }
 
     @Override
-    void buildState(final SessionStateImpl.SessionStateImplBuilder builder) {
+    void buildState(final SessionState.SessionStateBuilder builder) {
         super.buildState(builder);
-        builder.type(Type.ORIGINATOR);
+        builder.type(SessionState.Type.ORIGINATOR)
+                .sessionPublicKey(sessionPublicKey);
     }
 
 }

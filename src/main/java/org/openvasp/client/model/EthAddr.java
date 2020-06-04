@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.openvasp.client.common.VaspUtils.isValidHex;
 
@@ -16,7 +18,7 @@ import static org.openvasp.client.common.VaspUtils.isValidHex;
  * @author Olexandr_Bilovol@epam.com
  */
 @EqualsAndHashCode(of = {"data"})
-public final class EthAddr {
+public final class EthAddr implements Serializable {
 
     private static final String ETH_ADDR_FORMAT_ERROR = "Ethereum address should be a hexadecimal string of the length 40 prefixed with 0x";
 

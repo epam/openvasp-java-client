@@ -1,25 +1,30 @@
 package org.openvasp.client.service;
 
+import org.openvasp.client.api.whisper.model.ShhMessage;
 import org.openvasp.client.model.EncryptionType;
 import org.openvasp.client.model.Topic;
-import org.openvasp.client.model.VaspMessage;
 
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public interface MessageService {
+public interface WhisperService extends AutoCloseable {
+
+    void shutdown();
+
+    boolean waitForTermination(
+            long msTimeout);
 
     void send(
             Topic topic,
             EncryptionType encType,
             String key,
-            VaspMessage message);
+            String payload);
 
     long addTopicListener(
             Topic topic,
             EncryptionType encType,
             String key,
-            TopicListener<VaspMessage> listener);
+            TopicListener<ShhMessage> listener);
 
     void removeTopicListener(
             Topic topic,

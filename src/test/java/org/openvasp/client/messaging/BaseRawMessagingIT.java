@@ -50,14 +50,14 @@ public abstract class BaseRawMessagingIT {
 
         for (int i = 0; i < messages.size(); i++) {
             val header = messages.get(i).getHeader();
-            header.setMessageId(Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(i), header.MSG_ID_LENGTH));
+            header.setMessageId(Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(i), VaspMessage.Header.MSG_ID_LENGTH));
         }
     }
 
     @BeforeEach
     public void setUp() {
-        this.instance1 = new VaspInstance(module1);
-        this.instance2 = new VaspInstance(module2);
+        this.instance1 = new VaspInstance(module1, false);
+        this.instance2 = new VaspInstance(module2, false);
     }
 
     @AfterEach
@@ -78,7 +78,7 @@ public abstract class BaseRawMessagingIT {
                 EncryptionType.ASSYMETRIC,
                 module1.getVaspConfig().getHandshakePrivateKey(),
                 topicEvent -> {
-                    val message = topicEvent.getMessage();
+                    val message = topicEvent.getPayload();
                     logVaspMessage(message);
                     receivedMessages.add(message);
                     if (receivedMessages.size() == messages.size()) {
@@ -121,7 +121,7 @@ public abstract class BaseRawMessagingIT {
                 EncryptionType.SYMMETRIC,
                 symKey,
                 topicEvent -> {
-                    val message = topicEvent.getMessage();
+                    val message = topicEvent.getPayload();
                     logVaspMessage(message);
                     receivedMessages.add(message);
                     if (receivedMessages.size() == messages.size()) {

@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 
+import java.io.Serializable;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.openvasp.client.common.VaspUtils.toBytes;
 import static org.openvasp.client.common.VaspUtils.toHex;
@@ -19,7 +21,7 @@ import static org.openvasp.client.common.VaspUtils.toHex;
  * @author Olexandr_Bilovol@epam.com
  */
 @EqualsAndHashCode
-public final class Vaan {
+public final class Vaan implements Serializable {
 
     private static final String VAAN_FORMAT_ERROR = "VAAN should be a hexadecimal string of the length 24";
     private static final String VAAN_CHECKSUM_ERROR = "Invalid VAAN checksum: expected 0x%s but actual 0x%s";
