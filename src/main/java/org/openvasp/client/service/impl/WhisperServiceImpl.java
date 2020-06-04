@@ -306,6 +306,8 @@ public final class WhisperServiceImpl implements AutoCloseable, WhisperService {
             if (listenerRecord != null) {
                 listenerRecord.onTopicEvent(new TopicEvent<>(topic, whisperMessage));
             }
+        } catch (WhisperIOException ex) {
+            throw ex;
         } catch (VaspException ex) {
             log.error("Error of processing a Whisper incoming message at the topic " + topic, ex);
             exceptionHandler.processException(ex);
