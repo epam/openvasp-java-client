@@ -131,7 +131,14 @@ public abstract class BaseRecordingTransferIT {
         val message = beneficiarySession.takeIncomingMessage(WAIT_TIMEOUT_2);
         assertThat(message).isNotEmpty();
         assertThat(message.get()).isInstanceOf(SessionRequest.class);
-        transferLog.add(new TransferLogRecord(beneficiarySession.vaspCode(), message.get().asSessionRequest()));
+        assertThat(beneficiarySession.vaspInfo()).isNotNull();
+        assertThat(beneficiarySession.peerVaspInfo()).isNotNull();
+
+        transferLog.add(new TransferLogRecord(
+                beneficiarySession.vaspInfo().getVaspCode(),
+                beneficiarySession.peerVaspInfo().getVaspCode(),
+                message.get().asSessionRequest()));
+
         // The 1st response
         val sessionReply = new SessionReply();
         sessionReply.getHeader().setResponseCode(VaspResponseCode.OK.id);
@@ -158,9 +165,7 @@ public abstract class BaseRecordingTransferIT {
                 (request, session) -> {
                     val response = new TransferReply();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(request.getOriginator());
-                    response.setBeneficiary(request.getBeneficiary());
-                    response.setTransfer(request.getTransfer());
+                    response.setDestinationAddress("destination-address");
                     return response;
                 });
 
@@ -170,13 +175,12 @@ public abstract class BaseRecordingTransferIT {
                 transferLog,
                 (request, session) -> {
                     val response = new TransferDispatch();
-                    val transferInfo = session.transferInfo();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(transferInfo.getOriginator());
-                    response.setBeneficiary(transferInfo.getBeneficiary());
-                    response.setTransfer(transferInfo.getTransfer());
-                    response.setTx(new TransferMessage.Transaction());
-                    response.getTx().setDateTime(ZonedDateTime.now());
+                    val tx = new TransferDispatch.Tx();
+                    tx.setId("tx-id");
+                    tx.setDateTime(ZonedDateTime.now());
+                    tx.setSendingAddress("sending-address");
+                    response.setTx(tx);
                     return response;
                 });
 
@@ -186,12 +190,7 @@ public abstract class BaseRecordingTransferIT {
                 transferLog,
                 (request, session) -> {
                     val response = new TransferConfirmation();
-                    val transferInfo = session.transferInfo();
                     response.getHeader().setResponseCode(OK.id);
-                    response.setOriginator(transferInfo.getOriginator());
-                    response.setBeneficiary(transferInfo.getBeneficiary());
-                    response.setTransfer(transferInfo.getTransfer());
-                    response.setTx(transferInfo.getTx());
                     return response;
                 });
 
@@ -243,35 +242,35 @@ public abstract class BaseRecordingTransferIT {
         assertThat(transferLog.get(2).vaspMessage).isInstanceOf(TransferRequest.class);
         val message2 = transferLog.get(2).vaspMessage.asTransferRequest();
         // The sender is the originator
-        assertThat(message2.getSenderVaspCode()).isEqualTo(originatorVaspCode);
+        assertThat(transferLog.get(2).peerVaspCode).isEqualTo(originatorVaspCode);
 
         // The 4th message is TransferReply and it is processed at the originator side
         assertThat(transferLog.get(3).vaspCode).isEqualTo(originatorVaspCode);
         assertThat(transferLog.get(3).vaspMessage).isInstanceOf(TransferReply.class);
         val message3 = transferLog.get(3).vaspMessage.asTransferReply();
         // The sender is the beneficiary
-        assertThat(message3.getSenderVaspCode()).isEqualTo(beneficiaryVaspCode);
+        assertThat(transferLog.get(3).peerVaspCode).isEqualTo(beneficiaryVaspCode);
 
         // The 5th message is TransferDispatch and it is processed at the beneficiary side
         assertThat(transferLog.get(4).vaspCode).isEqualTo(beneficiaryVaspCode);
         assertThat(transferLog.get(4).vaspMessage).isInstanceOf(TransferDispatch.class);
         val message4 = transferLog.get(4).vaspMessage.asTransferDispatch();
         // The sender is the originator
-        assertThat(message4.getSenderVaspCode()).isEqualTo(originatorVaspCode);
+        assertThat(transferLog.get(4).peerVaspCode).isEqualTo(originatorVaspCode);
 
         // The 6th message is TransferConfirmation and it is processed at the originator side
         assertThat(transferLog.get(5).vaspCode).isEqualTo(originatorVaspCode);
         assertThat(transferLog.get(5).vaspMessage).isInstanceOf(TransferConfirmation.class);
         val message5 = transferLog.get(5).vaspMessage.asTransferConfirmation();
         // The sender is the beneficiary
-        assertThat(message5.getSenderVaspCode()).isEqualTo(beneficiaryVaspCode);
+        assertThat(transferLog.get(5).peerVaspCode).isEqualTo(beneficiaryVaspCode);
 
         // The 7th message is TerminationMessage and it is processed at the beneficiary side
         assertThat(transferLog.get(6).vaspCode).isEqualTo(beneficiaryVaspCode);
         assertThat(transferLog.get(6).vaspMessage).isInstanceOf(TerminationMessage.class);
         val message6 = transferLog.get(6).vaspMessage.asTerminationMessage();
         // The sender is the originator
-        assertThat(message6.getSenderVaspCode()).isEqualTo(originatorVaspCode);
+        assertThat(transferLog.get(6).peerVaspCode).isEqualTo(originatorVaspCode);
     }
 
     private <T extends VaspMessage, U extends VaspMessage>
@@ -285,7 +284,11 @@ public abstract class BaseRecordingTransferIT {
         assertThat(messageOpt).isNotEmpty();
         val message = messageOpt.get();
         assertThat(message).isInstanceOf(expectedMessageClass);
-        transferLog.add(new TransferLogRecord(session.vaspCode(), message));
+
+        transferLog.add(new TransferLogRecord(
+                session.vaspInfo().getVaspCode(),
+                session.peerVaspInfo().getVaspCode(),
+                message));
 
         @SuppressWarnings("unchecked")
         val response = responseAction.apply((T) message, session);

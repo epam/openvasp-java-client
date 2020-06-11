@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openvasp.client.common.Json.loadTestJson;
@@ -57,6 +58,7 @@ public abstract class BaseRawMessagingIT {
     @BeforeEach
     public void setUp() {
         this.instance1 = new VaspInstance(module1, false);
+        this.instance1.addVaspIdResolver(message -> Optional.of(CONTRACT_ADDRESS_2));
         this.instance2 = new VaspInstance(module2, false);
     }
 
@@ -73,6 +75,7 @@ public abstract class BaseRawMessagingIT {
         log.debug("check asymmetric sending and receiving");
 
         val receivedMessages = new ArrayList<VaspMessage>();
+
         instance1.addTopicListener(
                 module1.getVaspCode().toTopic(),
                 EncryptionType.ASSYMETRIC,
@@ -131,7 +134,7 @@ public abstract class BaseRawMessagingIT {
         );
 
         for (val message : messages) {
-            instance1.send(
+            instance2.send(
                     module1.getVaspCode().toTopic(),
                     EncryptionType.SYMMETRIC,
                     symKey,

@@ -1,6 +1,5 @@
 package org.openvasp.client.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,20 +8,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public final class TransferConfirmation extends TransferMessage {
-
-    @JsonProperty("tx")
-    private Transaction tx;
+public final class TransferConfirmation extends VaspMessage {
 
     {
         getHeader().setMessageType(TypeDescriptor.TRANSFER_CONFIRMATION);
-    }
-
-    @Override
-    public void validate() {
-        super.validate();
-        validateNotNull(tx, "tx");
-        validateNotNull(tx.getDateTime(), "tx.datetime");
     }
 
 }

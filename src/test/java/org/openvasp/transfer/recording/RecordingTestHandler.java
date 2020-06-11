@@ -27,19 +27,16 @@ final class RecordingTestHandler implements SimpleTransferHandler {
         }
     }
 
-    public RecordingTestHandler() {
-        this(null);
-    }
-
     @Override
     public void accept(@NonNull final VaspMessage message, @NonNull final Session session) {
-        logRecord(session.vaspCode(), message);
+        logRecord(message, session);
         SimpleTransferHandler.super.accept(message, session);
     }
 
-    void logRecord(final VaspCode vaspCode, final VaspMessage vaspMessage) {
-        transferLog.add(new TransferLogRecord(vaspCode, vaspMessage));
-        log.debug("process {} at {}", vaspMessage.getClass().getSimpleName(), vaspCode);
+    void logRecord(final VaspMessage message, final Session session) {
+        final VaspCode vaspCode = session.vaspInfo().getVaspCode();
+        transferLog.add(new TransferLogRecord(vaspCode, session.peerVaspInfo().getVaspCode(), message));
+        log.debug("process {} at {}", message.getClass().getSimpleName(), vaspCode);
     }
 
     void clearTransferLog() {

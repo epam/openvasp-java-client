@@ -8,6 +8,7 @@ import org.openvasp.client.model.*;
 import org.openvasp.client.service.ContractService;
 import org.openvasp.client.service.MessageService;
 import org.openvasp.client.service.TopicEvent;
+import org.openvasp.client.service.VaspIdentityService;
 import org.openvasp.client.session.BeneficiarySession;
 import org.openvasp.client.session.OriginatorSession;
 import org.openvasp.client.session.Session;
@@ -30,7 +31,7 @@ import java.util.function.BiConsumer;
  * @author Olexandr_Bilovol@epam.com
  */
 @Singleton
-public final class SessionManagerImpl implements SessionManager {
+public final class SessionManagerImpl implements SessionManager, VaspIdentityService {
 
     final ContractService contractService;
     final MessageService messageService;
@@ -201,6 +202,26 @@ public final class SessionManagerImpl implements SessionManager {
 
     private Session restoreBeneficiarySession(@NonNull final SessionState sessionState) {
         return new BeneficiarySessionImpl(this, sessionState);
+    }
+
+    @Override
+    public Optional<EthAddr> resolveSenderVaspId(@NonNull final VaspMessage message) {
+        if (message instanceof SessionRequest) {
+            return Optional.of(message.asSessionRequest().getVaspInfo().getVaspId());
+        }
+
+        if (message instanceof SessionReply) {
+            return Optional.of(message.asSessionReply().getVaspInfo().getVaspId());
+        }
+
+        val sessionId = message.getHeader().getSessionId();
+        for (val session : allSessions()) {
+            if (sessionId.equals(session.sessionId())) {
+                return Optional.of(session.peerVaspInfo().getVaspId());
+            }
+        }
+
+        return Optional.empty();
     }
 
 }

@@ -5,6 +5,7 @@
     "session": "0x0ddc6e6dc46b52dc8ef8c33a5eaedd45",
     "code": "1"
   },
+  "comment": "SESSION_REQUEST",
   "handshake": {
     "topica": "0x12345678",
     "ecdhpk": "0x044ffeb548a05b879757dc37911bb41f95966311b00b8687da8913c6b0bf7deddd1c233d8294e0c31f0099058bf056c0f5fb8919e87bf148b0f04ace8f19004bb9"
@@ -14,13 +15,12 @@
     "id": "0x6befaf0656b953b188a0ee3bf3db03d07dface61",
     "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     "address": {
-        "street": "Kappelergasse",
-        "number": "1",
-        "adrline": "Fraumunsterpost",
-        "postcode": "8022",
-        "town": "Zurich",
-        "country": "CH"
+      "street": "Kappelergasse",
+      "number": "1",
+      "adrline": "Fraumunsterpost",
+      "postcode": "8022",
+      "town": "Zurich",
+      "country": "CH"
     }
-  },
-  "comment": "SESSION_REQUEST"
+  }
 }

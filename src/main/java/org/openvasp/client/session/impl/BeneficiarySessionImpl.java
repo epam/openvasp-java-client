@@ -62,11 +62,6 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
     }
 
     @Override
-    public VaspCode peerVaspCode() {
-        return peerVaspInfo.getVaspCode();
-    }
-
-    @Override
     Topic incomingMessageTopic() {
         return topicB;
     }
@@ -78,18 +73,10 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
 
     @Override
     public void sendMessage(@NonNull final VaspMessage message) {
-        val messageCode = message.getResponseCode();
-
         if (message instanceof SessionReply) {
             val sessionReply = (SessionReply) message;
-            sessionReply.setHandshake(SessionMessage.Handshake.builder()
-                    .topicB(topicB)
-                    .build());
-        }
-
-        if (messageCode.equals(VaspResponseCode.OK.id) && message instanceof TransferMessage) {
-            val transferMessage = (TransferMessage) message;
-            transferInfo.setTransfer(transferMessage.getTransfer());
+            sessionReply.setHandshake(new SessionReply.Handshake(topicB));
+            sessionReply.setVaspInfo(owner.vaspInfo);
         }
 
         super.sendMessage(message);
@@ -108,9 +95,6 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
 
         if (message instanceof TransferDispatch) {
             val transferDispatch = (TransferDispatch) message;
-            transferInfo.setOriginator(transferDispatch.getOriginator());
-            transferInfo.setBeneficiary(transferDispatch.getBeneficiary());
-            transferInfo.setTransfer(transferDispatch.getTransfer());
             transferInfo.setTx(transferDispatch.getTx());
         }
 

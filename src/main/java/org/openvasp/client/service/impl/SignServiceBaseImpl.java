@@ -8,6 +8,7 @@ import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.service.ContractService;
 import org.openvasp.client.service.SignService;
+import org.openvasp.client.service.VaspIdentityService;
 
 import static org.openvasp.client.common.VaspUtils.hexStrDecode;
 import static org.openvasp.client.common.VaspUtils.hexStrEncode;
@@ -18,9 +19,14 @@ import static org.openvasp.client.common.VaspUtils.hexStrEncode;
 abstract class SignServiceBaseImpl implements SignService {
 
     private final ContractService contractService;
+    private final VaspIdentityService vaspIdentityService;
 
-    SignServiceBaseImpl(final ContractService contractService) {
+    SignServiceBaseImpl(
+            final ContractService contractService,
+            final VaspIdentityService vaspIdentityService) {
+
         this.contractService = contractService;
+        this.vaspIdentityService = vaspIdentityService;
     }
 
     @Override
@@ -36,20 +42,22 @@ abstract class SignServiceBaseImpl implements SignService {
         val json = hexStrDecode(payload);
         val signature = StringUtils.right(whisperPayload, signatureLength());
 
-        val vaspMessage = VaspMessage.fromJson(json);
-        vaspMessage.validate();
+        val message = VaspMessage.fromJson(json);
+        message.validate();
 
-        val senderVaspCode = vaspMessage.getVaspInfo().getVaspCode();
-        val senderContract = contractService.getVaspContractInfo(senderVaspCode);
+        val senderContractAddress = vaspIdentityService.resolveSenderVaspId(message)
+                .orElseThrow(() -> new VaspValidationException(message, "Sender's VASP ID cannot be resolved"));
+
+        val senderContract = contractService.getVaspContractInfo(senderContractAddress);
         val publicSigningKey = senderContract.getSigningKey();
 
         if (!verifySign(payload, signature, publicSigningKey)) {
             throw new VaspValidationException(
-                    vaspMessage,
+                    message,
                     "Invalid signature for incoming message");
         }
 
-        return vaspMessage;
+        return message;
     }
 
     abstract int signatureLength();

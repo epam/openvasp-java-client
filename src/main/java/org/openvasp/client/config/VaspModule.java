@@ -91,6 +91,7 @@ public class VaspModule extends AbstractModule implements AutoCloseable {
         bind(ConfirmationService.class).to(ConfirmationServiceImpl.class);
 
         bind(SessionManager.class).to(SessionManagerImpl.class);
+        bind(VaspIdentityService.class).to(VaspIdentityServiceImpl.class);
     }
 
     protected void bindEnsService() {

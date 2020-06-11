@@ -1,6 +1,6 @@
 {
   "handshake": {
-    "topicb": "0x75ce1e35"
+    "topicb": "0xe6f72a9c"
   },
   "vasp": {
     "name": "TestOpenVaspJur",
@@ -25,8 +25,8 @@
   },
   "msg": {
     "type": "150",
-    "msgid": "0x664ae93d657bd540a06664ed92d6f734",
-    "session": "0x8e8667b04d7ef44b8ae5617b472a0108",
+    "msgid": "0xfac919d0d30a2a4f9adcd06c55efb295",
+    "session": "0xdc22ceb196a83a41ac9848cd11865cb2",
     "code": "1"
   },
   "comment": ""

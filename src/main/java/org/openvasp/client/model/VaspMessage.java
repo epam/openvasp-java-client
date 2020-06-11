@@ -31,19 +31,9 @@ public abstract class VaspMessage {
     @JsonProperty("comment")
     private String comment;
 
-    @JsonProperty("vasp")
-    private VaspInfo vaspInfo;
-
     @JsonIgnore
     public final String getResponseCode() {
         return getHeader().responseCode;
-    }
-
-    @JsonIgnore
-    public final VaspCode getSenderVaspCode() {
-        checkState(vaspInfo != null);
-        checkState(vaspInfo.getVaspId() != null);
-        return vaspInfo.getVaspCode();
     }
 
     @JsonIgnore
@@ -54,13 +44,27 @@ public abstract class VaspMessage {
     }
 
     public void validate() {
-        header.validate(this);
-        validateNotNull(vaspInfo, "vasp");
-        validateNotNull(vaspInfo.getName(), "vasp.name");
-        validateNotNull(vaspInfo.getVaspId(), "vasp.id");
-        validateNotNull(vaspInfo.getPk(), "vasp.pk");
-        validateNotNull(vaspInfo.getAddress(), "vasp.address");
-        vaspInfo.validate(this);
+        validateNotNull(header, "msg");
+        validateNotNull(header.messageType, "msg.type");
+        validateNotNull(header.messageId, "msg.msgid");
+        validateNotNull(header.sessionId, "msg.session");
+        validateNotNull(header.responseCode, "msg.code");
+
+        val messageId = Numeric.cleanHexPrefix(header.messageId);
+        if (messageId.length() != Header.MSG_ID_LENGTH || !VaspUtils.isValidHex(messageId)) {
+            throw new VaspValidationException(this,
+                    "The field 'msg.msgid' is invalid - must be a hexadecimal string of length %d, but is: %s",
+                    Header.MSG_ID_LENGTH,
+                    messageId);
+        }
+
+        val sessionId = Numeric.cleanHexPrefix(header.sessionId);
+        if (sessionId.length() != Header.SESSION_ID_LENGTH || !VaspUtils.isValidHex(sessionId)) {
+            throw new VaspValidationException(this,
+                    "The field 'msg.session' is invalid - must be a hexadecimal string of length %d, but is: %s",
+                    Header.SESSION_ID_LENGTH,
+                    sessionId);
+        }
     }
 
     void validateNotNull(final Object obj, @NonNull final String path) {
@@ -143,7 +147,7 @@ public abstract class VaspMessage {
     @Setter
     @ToString(of = {"messageType", "messageId"})
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Header {
+    public static final class Header {
 
         public static final int MSG_ID_LENGTH = 32; // Hex(128-bit)
         public static final int SESSION_ID_LENGTH = 32; // Hex(128-bit)
@@ -160,25 +164,9 @@ public abstract class VaspMessage {
         @JsonProperty("code")
         private String responseCode = VaspResponseCode.OK.id;
 
-        public void validate(@NonNull final VaspMessage source) {
-            if (Numeric.cleanHexPrefix(messageId).length() != MSG_ID_LENGTH || !VaspUtils.isValidHex(messageId)) {
-                throw new VaspValidationException(source,
-                        "The field 'msgid' is invalid - must be a hexadecimal string of length %d, but is: %s",
-                        MSG_ID_LENGTH,
-                        messageId);
-            }
-
-            if (Numeric.cleanHexPrefix(sessionId).length() != SESSION_ID_LENGTH || !VaspUtils.isValidHex(sessionId)) {
-                throw new VaspValidationException(source,
-                        "The field 'session' is invalid - must be a hexadecimal string of length %d, but is: %s",
-                        SESSION_ID_LENGTH,
-                        sessionId);
-            }
-        }
-
     }
 
-    public static void checkRules(
+    static void checkRules(
             @NonNull final VaspMessage source,
             final BirthInfo birth,
             final List<NaturalPersonId> nat,
@@ -188,12 +176,10 @@ public abstract class VaspMessage {
         if (birth != null || (nat != null && !nat.isEmpty())) {
             // Natural person
             if (StringUtils.isNotEmpty(bic)) {
-                throw new VaspValidationException(source,
-                        "[bic] must be empty for Natural Person");
+                throw new VaspValidationException(source, "[bic] must be empty for Natural Person");
             }
             if (jur != null && !jur.isEmpty()) {
-                throw new VaspValidationException(source,
-                        "[jur] must be empty for Natural Person");
+                throw new VaspValidationException(source, "[jur] must be empty for Natural Person");
             }
             if (nat != null) {
                 for (val natPerson : nat) {
@@ -203,8 +189,7 @@ public abstract class VaspMessage {
         } else if (jur != null) {
             // Juridical person
             if (StringUtils.isNotEmpty(bic)) {
-                throw new VaspValidationException(source,
-                        "[bic] must be empty for Juridical Person");
+                throw new VaspValidationException(source, "[bic] must be empty for Juridical Person");
             }
             for (JuridicalPersonId jurPerson : jur) {
                 jurPerson.validate(source);
@@ -212,8 +197,7 @@ public abstract class VaspMessage {
         } else {
             // Bank
             if (StringUtils.isEmpty(bic)) {
-                throw new VaspValidationException(source,
-                        "[bic] must be present for Bank");
+                throw new VaspValidationException(source, "[bic] must be present for Bank");
             }
         }
     }

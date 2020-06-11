@@ -33,27 +33,19 @@ public interface SimpleTransferHandler extends BiConsumer<VaspMessage, Session> 
         if (message instanceof TransferRequest) {
             val request = (TransferRequest) message;
             val response = new TransferReply();
-            response.setOriginator(request.getOriginator());
-            response.setBeneficiary(request.getBeneficiary());
-            response.setTransfer(request.getTransfer());
             onTransferRequest(request, response, session);
         }
 
         if (message instanceof TransferReply) {
+            val request = (TransferReply) message;
+            session.transferInfo().setDestinationAddress(request.getDestinationAddress());
             val response = new TransferDispatch();
-            response.setOriginator(session.transferInfo().getOriginator());
-            response.setBeneficiary(session.transferInfo().getBeneficiary());
-            response.setTransfer(session.transferInfo().getTransfer());
             response.setTx(session.transferInfo().getTx());
             onTransferReply((TransferReply) message, response, session);
         }
 
         if (message instanceof TransferDispatch) {
             val response = new TransferConfirmation();
-            response.setOriginator(session.transferInfo().getOriginator());
-            response.setBeneficiary(session.transferInfo().getBeneficiary());
-            response.setTransfer(session.transferInfo().getTransfer());
-            response.setTx(session.transferInfo().getTx());
             onTransferDispatch((TransferDispatch) message, response, session);
         }
 
