@@ -16,9 +16,7 @@ public interface Session {
 
     String sessionId();
 
-    VaspCode vaspCode();
-
-    VaspCode peerVaspCode();
+    VaspInfo vaspInfo();
 
     VaspInfo peerVaspInfo();
 

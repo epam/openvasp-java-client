@@ -1,9 +1,8 @@
 package org.openvasp.client.model;
 
 import lombok.*;
-
-import static org.openvasp.client.model.TransferMessage.Transaction;
-import static org.openvasp.client.model.TransferMessage.Transfer;
+import org.openvasp.client.model.TransferDispatch.Tx;
+import org.openvasp.client.model.TransferRequest.Transfer;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -18,8 +17,7 @@ public final class TransferInfo {
     private Originator originator;
     private Beneficiary beneficiary;
     private Transfer transfer;
-
-    @Setter
-    private Transaction tx;
+    private Tx tx;
+    private String destinationAddress;
 
 }

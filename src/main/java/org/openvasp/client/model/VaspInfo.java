@@ -46,7 +46,7 @@ public final class VaspInfo {
         return vaspId.toVaspCode();
     }
 
-    public void validate(@NonNull final VaspMessage source) {
+    void validate(@NonNull final VaspMessage source) {
         address.validate(source);
     }
 

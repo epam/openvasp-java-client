@@ -35,7 +35,7 @@ public final class PostalAddress {
     @JsonProperty("country")
     private Country country;
 
-    public void validate(@NonNull final VaspMessage source) {
+    void validate(@NonNull final VaspMessage source) {
         if (StringUtils.isEmpty(postCode)) {
             throw new VaspValidationException(source, "Post code must be present");
         }

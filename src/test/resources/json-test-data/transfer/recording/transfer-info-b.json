@@ -11,9 +11,9 @@
   "transfer": {
     "va": "ETH",
     "ttype": "1",
-    "amount": 102,
-    "destination": "DADDR02"
+    "amount": 102
   },
+  "destinationAddress": "DADDR02",
   "tx": {
     "txid": "TX02",
     "datetime": "2020-04-03T10:00:00Z",

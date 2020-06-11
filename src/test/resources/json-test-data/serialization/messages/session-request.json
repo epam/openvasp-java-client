@@ -1,7 +1,7 @@
 {
   "handshake": {
-    "topica": "0xa4356c40",
-    "ecdhpk": "0xcaf60628b7b009439928890398cb11c7ff5c4d880f7c5304834576f3e5de0679a6a64b5e6b423a369a3c6a7e756c133118994d94906a490840881e7b0acc1674"
+    "topica": "0x527aeb21",
+    "ecdhpk": "0xac7c9764497e5e5d3c42a4cc0b1425fda9f7564e49f288994fdbbb42e5731bb0f30f82e1890459cb40325989a6a872a963d40efdbc88d66e427da1ecded0e4c2"
   },
   "vasp": {
     "name": "TestVaspContractPerson",
@@ -16,7 +16,7 @@
       "country": "DE"
     },
     "birth": {
-      "birthdate": "20200428",
+      "birthdate": "20200608",
       "birthcity": "Town X",
       "birthcountry": "DE"
     },
@@ -31,8 +31,8 @@
   },
   "msg": {
     "type": "110",
-    "msgid": "0xda770238290a75408b8397d0905d21bf",
-    "session": "0x8e8667b04d7ef44b8ae5617b472a0108",
+    "msgid": "0x32eaae0fcbf6a342aec65936ea208653",
+    "session": "0xfe3f216d0de7f94ba978225842c7330c",
     "code": "1"
   },
   "comment": ""

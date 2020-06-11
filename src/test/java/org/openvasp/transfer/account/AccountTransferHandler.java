@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.openvasp.client.SimpleTransferHandler;
 import org.openvasp.client.model.*;
-import org.openvasp.client.model.TransferMessage.Transaction;
 import org.openvasp.client.session.Session;
 
 import java.math.BigDecimal;
@@ -24,7 +23,7 @@ final class AccountTransferHandler implements SimpleTransferHandler {
 
     @Override
     public void accept(@NonNull final VaspMessage message, @NonNull final Session session) {
-        logMessage(session.vaspCode(), message);
+        logMessage(session.vaspInfo().getVaspCode(), message);
         SimpleTransferHandler.super.accept(message, session);
     }
 
@@ -36,7 +35,7 @@ final class AccountTransferHandler implements SimpleTransferHandler {
 
         final Vaan beneficiaryVaan = request.getBeneficiary().getVaan();
         final String beneficiaryAccount = accountService.getAccount(beneficiaryVaan);
-        response.getTransfer().setDestinationAddress(beneficiaryAccount);
+        response.setDestinationAddress(beneficiaryAccount);
 
         SimpleTransferHandler.super.onTransferRequest(request, response, session);
     }
@@ -47,18 +46,19 @@ final class AccountTransferHandler implements SimpleTransferHandler {
             @NonNull final TransferDispatch response,
             @NonNull final Session session) {
 
-        final Vaan originatorVaan = request.getOriginator().getVaan();
-        final BigDecimal amount = request.getTransfer().getAmount();
+        final TransferInfo transferInfo = session.transferInfo();
+        final Vaan originatorVaan = transferInfo.getOriginator().getVaan();
+        final BigDecimal amount = transferInfo.getTransfer().getAmount();
         final String originatorAccount = accountService.getAccount(originatorVaan);
         accountService.subtract(originatorAccount, amount);
 
-        final String beneficiaryAccount = request.getTransfer().getDestinationAddress();
+        final String beneficiaryAccount = request.getDestinationAddress();
         final String txID = accountService.add(beneficiaryAccount, amount);
 
-        Transaction tx = new Transaction();
+        final TransferDispatch.Tx tx = new TransferDispatch.Tx();
         tx.setId(txID);
         tx.setDateTime(ZonedDateTime.now());
-        tx.setSendingAddress(request.getTransfer().getDestinationAddress());
+        tx.setSendingAddress(request.getDestinationAddress());
         response.setTx(tx);
 
         SimpleTransferHandler.super.onTransferReply(request, response, session);
@@ -70,8 +70,9 @@ final class AccountTransferHandler implements SimpleTransferHandler {
             @NonNull final TransferConfirmation response,
             @NonNull final Session session) {
 
-        final BigDecimal amount = request.getTransfer().getAmount();
-        final Transaction tx = request.getTx();
+        final TransferInfo transferInfo = session.transferInfo();
+        final BigDecimal amount = transferInfo.getTransfer().getAmount();
+        final TransferDispatch.Tx tx = request.getTx();
         if (accountService.checkTransaction(tx.getId(), amount)) {
             response.getHeader().setResponseCode(VaspResponseCode.OK.id);
         } else {

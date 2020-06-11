@@ -35,6 +35,7 @@ public class JsonSer2Tests {
         sessionRequest.validate();
         checkBaseMessage(sessionRequest, TypeDescriptor.SESSION_REQUEST, jsonFixture);
         checkNaturalPerson(sessionRequest, jsonFixture);
+        checkVaspInfo(sessionRequest, TypeDescriptor.SESSION_REQUEST, jsonFixture);
 
         val handshake = sessionRequest.getHandshake();
         assertThat(handshake).isNotNull();
@@ -53,7 +54,6 @@ public class JsonSer2Tests {
 
         sessionReply.validate();
         checkBaseMessage(sessionReply, TypeDescriptor.SESSION_REPLY, jsonFixture);
-        checkJuridicalPerson(sessionReply);
 
         val handshake = sessionReply.getHandshake();
         assertThat(handshake).isNotNull();
@@ -71,14 +71,13 @@ public class JsonSer2Tests {
 
         transferRequest.validate();
         checkBaseMessage(transferRequest, TypeDescriptor.TRANSFER_REQUEST, jsonFixture);
-        checkNaturalPerson(transferRequest, jsonFixture);
         checkOriginator(transferRequest, jsonFixture);
         checkBenificiary(transferRequest, jsonFixture);
 
         val transfer = transferRequest.getTransfer();
         assertThat(transfer).isNotNull();
-        assertThat(transfer.getAssetType()).isEqualTo(TransferMessage.VirtualAssetType.BTC);
-        assertThat(transfer.getTransferType()).isEqualTo(TransferMessage.TransferType.BLOCKCHAIN_TRANSFER);
+        assertThat(transfer.getAssetType()).isEqualTo(TransferRequest.VirtualAssetType.BTC);
+        assertThat(transfer.getTransferType()).isEqualTo(TransferRequest.TransferType.BLOCKCHAIN_TRANSFER);
         assertThat(transfer.getAmount()).isEqualTo(new BigDecimal("123.0"));
 
         JSONAssert.assertEquals(loadTestJson(jsonFileName), toJson(transferRequest), false);
@@ -88,21 +87,12 @@ public class JsonSer2Tests {
     @SneakyThrows
     public void transferReply() {
         val jsonFileName = SER_DATA_FOLDER + "/transfer-reply.json";
-        val transferReply = loadTestJson(TransferRequest.class, jsonFileName);
+        val transferReply = loadTestJson(TransferReply.class, jsonFileName);
         val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         transferReply.validate();
         checkBaseMessage(transferReply, TypeDescriptor.TRANSFER_REPLY, jsonFixture);
-        checkJuridicalPerson(transferReply);
-        checkOriginator(transferReply, jsonFixture);
-        checkBenificiary(transferReply, jsonFixture);
-
-        val transfer = transferReply.getTransfer();
-        assertThat(transfer).isNotNull();
-        assertThat(transfer.getDestinationAddress()).isEqualTo("dest");
-        assertThat(transfer.getAssetType()).isEqualTo(TransferMessage.VirtualAssetType.BTC);
-        assertThat(transfer.getTransferType()).isEqualTo(TransferMessage.TransferType.BLOCKCHAIN_TRANSFER);
-        assertThat(transfer.getAmount()).isEqualTo(new BigDecimal("123.0"));
+        assertThat(transferReply.getDestinationAddress()).isEqualTo("destinationAddress");
 
         JSONAssert.assertEquals(loadTestJson(jsonFileName), toJson(transferReply), false);
     }
@@ -116,21 +106,11 @@ public class JsonSer2Tests {
 
         transferDispatch.validate();
         checkBaseMessage(transferDispatch, TypeDescriptor.TRANSFER_DISPATCH, jsonFixture);
-        checkNaturalPerson(transferDispatch, jsonFixture);
-        checkOriginator(transferDispatch, jsonFixture);
-        checkBenificiary(transferDispatch, jsonFixture);
-
-        val transfer = transferDispatch.getTransfer();
-        assertThat(transfer).isNotNull();
-        assertThat(transfer.getDestinationAddress()).isEqualTo("dest");
-        assertThat(transfer.getAssetType()).isEqualTo(TransferMessage.VirtualAssetType.BTC);
-        assertThat(transfer.getTransferType()).isEqualTo(TransferMessage.TransferType.BLOCKCHAIN_TRANSFER);
-        assertThat(transfer.getAmount()).isEqualTo(new BigDecimal("123.0"));
 
         val transaction = transferDispatch.getTx();
         assertThat(transaction).isNotNull();
         assertThat(transaction.getId()).isEqualTo("hash");
-        assertThat(transaction.getDateTime()).isEqualTo(ZonedDateTime.parse("2020-04-28T06:07:36Z"));
+        assertThat(transaction.getDateTime()).isEqualTo(ZonedDateTime.parse("2020-06-08T09:36:29Z"));
         assertThat(transaction.getSendingAddress()).isEqualTo("sending_addr");
 
         JSONAssert.assertEquals(loadTestJson(jsonFileName), toJson(transferDispatch), false);
@@ -145,22 +125,6 @@ public class JsonSer2Tests {
 
         transferConfirmation.validate();
         checkBaseMessage(transferConfirmation, TypeDescriptor.TRANSFER_CONFIRMATION, jsonFixture);
-        checkJuridicalPerson(transferConfirmation);
-        checkOriginator(transferConfirmation, jsonFixture);
-        checkBenificiary(transferConfirmation, jsonFixture);
-
-        val transfer = transferConfirmation.getTransfer();
-        assertThat(transfer).isNotNull();
-        assertThat(transfer.getDestinationAddress()).isEqualTo("dest");
-        assertThat(transfer.getAssetType()).isEqualTo(TransferMessage.VirtualAssetType.BTC);
-        assertThat(transfer.getTransferType()).isEqualTo(TransferMessage.TransferType.BLOCKCHAIN_TRANSFER);
-        assertThat(transfer.getAmount()).isEqualTo(new BigDecimal("123.0"));
-
-        val transaction = transferConfirmation.getTx();
-        assertThat(transaction).isNotNull();
-        assertThat(transaction.getId()).isEqualTo("txid");
-        assertThat(transaction.getDateTime()).isEqualTo(ZonedDateTime.parse("2020-04-30T06:35:36Z"));
-        assertThat(transaction.getSendingAddress()).isEqualTo("sendingaddr");
 
         JSONAssert.assertEquals(loadTestJson(jsonFileName), toJson(transferConfirmation), false);
     }
@@ -174,7 +138,7 @@ public class JsonSer2Tests {
 
         termination.validate();
         checkBaseMessage(termination, TypeDescriptor.TERMINATION, jsonFixture);
-        checkNaturalPerson(termination, jsonFixture);
+
         JSONAssert.assertEquals(loadTestJson(jsonFileName), toJson(termination), false);
     }
 
@@ -190,6 +154,15 @@ public class JsonSer2Tests {
         jsonFixture.assertEquals(msg.getSessionId(), "$.msg.session");
         assertThat(msg.getResponseCode()).isEqualTo("1");
 
+        assertThat(message.getComment()).isNotNull();
+        assertThat(message.getComment()).isEmpty();
+    }
+
+    private void checkVaspInfo(
+            final SessionMessage message,
+            final TypeDescriptor expectedType,
+            final JsonPathFixture jsonFixture) {
+
         val vasp = message.getVaspInfo();
         assertThat(vasp).isNotNull();
         jsonFixture.assertEquals(vasp.getName(), "$.vasp.name");
@@ -204,13 +177,10 @@ public class JsonSer2Tests {
         jsonFixture.assertEquals(address.getPostCode(), "$.vasp.address.postcode");
         jsonFixture.assertEquals(address.getTown(), "$.vasp.address.town");
         jsonFixture.assertEquals(address.getCountry().getCode(), "$.vasp.address.country");
-
-        assertThat(message.getComment()).isNotNull();
-        assertThat(message.getComment()).isEmpty();
     }
 
     private void checkNaturalPerson(
-            final VaspMessage message,
+            final SessionMessage message,
             final JsonPathFixture jsonFixture) {
 
         val birth = message.getVaspInfo().getBirth();
@@ -229,7 +199,8 @@ public class JsonSer2Tests {
     }
 
     private void checkJuridicalPerson(
-            final VaspMessage message) {
+            final SessionMessage message,
+            final JsonPathFixture jsonFixture) {
 
         val jur = message.getVaspInfo().getJur();
         assertThat(jur).isNotNull();
@@ -241,7 +212,7 @@ public class JsonSer2Tests {
     }
 
     private void checkOriginator(
-            final TransferMessage message,
+            final TransferRequest message,
             final JsonPathFixture jsonFixture) {
 
         val originator = message.getOriginator();
@@ -260,7 +231,7 @@ public class JsonSer2Tests {
 
         val originatorBirth = originator.getBirth();
         assertThat(originatorBirth).isNotNull();
-        assertThat(originatorBirth.getBirthDate()).isEqualTo("1990-04-28");
+        assertThat(originatorBirth.getBirthDate()).isEqualTo("1990-06-08");
         assertThat(originatorBirth.getBirthCity()).isEqualTo("TownX");
         assertThat(originatorBirth.getBirthCountry()).isEqualTo(Country.ALL.get("DE"));
 
@@ -274,18 +245,18 @@ public class JsonSer2Tests {
     }
 
     private void checkBenificiary(
-            final TransferMessage message,
+            final TransferRequest message,
             final JsonPathFixture jsonFixture) {
 
         val beneficiary = message.getBeneficiary();
         assertThat(beneficiary).isNotNull();
         assertThat(beneficiary.getName()).isEqualTo("name");
         val vaan = beneficiary.getVaan();
-        assertThat(vaan.getData()).isEqualTo("bbb4ee5c524ee3fb08280970");
+        assertThat(vaan.getData()).isEqualTo("BBB4eE5C524ee3fb08280970");
         assertThat(vaan.getCustomerNr()).isEqualTo("524ee3fb082809");
         assertThat(vaan.getCheckSum()).isEqualTo("70");
         val vaspCode = vaan.getVaspCode();
-        assertThat(vaspCode.toString()).isEqualTo("bbb4ee5c");
+        assertThat(vaspCode.toString()).isEqualTo("BBB4eE5C");
     }
 
 }

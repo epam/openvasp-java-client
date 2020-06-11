@@ -11,6 +11,7 @@ import org.openvasp.client.model.VaspMessage;
 final class TransferLogRecord {
 
     final VaspCode vaspCode;
+    final VaspCode peerVaspCode;
     final VaspMessage vaspMessage;
 
 }

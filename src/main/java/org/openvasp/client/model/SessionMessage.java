@@ -1,10 +1,11 @@
 package org.openvasp.client.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
-import org.openvasp.client.common.VaspValidationException;
-import org.web3j.utils.Numeric;
+import lombok.Getter;
+import lombok.Setter;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -13,49 +14,25 @@ import org.web3j.utils.Numeric;
 @Setter
 public abstract class SessionMessage extends VaspMessage {
 
-    @JsonProperty("handshake")
-    private Handshake handshake;
+    @JsonProperty("vasp")
+    private VaspInfo vaspInfo;
+
+    @JsonIgnore
+    public final VaspCode getSenderVaspCode() {
+        checkState(vaspInfo != null);
+        checkState(vaspInfo.getVaspId() != null);
+        return vaspInfo.getVaspCode();
+    }
 
     @Override
     public void validate() {
         super.validate();
-        validateNotNull(handshake, "handshake");
-        handshake.validate(this);
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static final class Handshake {
-
-        // TODO: pending discussions
-        //  https://github.com/LykkeBusiness/openvasp-message-samples/issues/1
-        //  https://github.com/OpenVASP/openvasp-specification/issues/7
-        public static final int ECDHPK_LENGTH = 130;
-
-        @JsonProperty("topica")
-        private Topic topicA;
-
-        @JsonProperty("topicb")
-        private Topic topicB;
-
-        @JsonProperty("ecdhpk")
-        private String sessionPublicKey;
-
-        public void validate(VaspMessage source) {
-            if (null != sessionPublicKey && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH
-                    && Numeric.cleanHexPrefix(sessionPublicKey).length() != ECDHPK_LENGTH-2)
-            {
-                throw new VaspValidationException(source,
-                        "The field 'ecdhpk' is invalid - must be a hexadecimal string of length %d, but is: %s",
-                        ECDHPK_LENGTH,
-                        sessionPublicKey);
-            }
-        }
-
+        validateNotNull(vaspInfo, "vasp");
+        validateNotNull(vaspInfo.getName(), "vasp.name");
+        validateNotNull(vaspInfo.getVaspId(), "vasp.id");
+        validateNotNull(vaspInfo.getPk(), "vasp.pk");
+        validateNotNull(vaspInfo.getAddress(), "vasp.address");
+        vaspInfo.validate(this);
     }
 
 }

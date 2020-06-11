@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Olexandr_Bilovol@epam.com
@@ -34,7 +35,8 @@ public final class VaspInstance implements
         ContractService,
         MessageService,
         ConfirmationService,
-        SessionManager {
+        SessionManager,
+        VaspIdentityService {
 
     public static final String VERSION = "0.0.1";
 
@@ -46,6 +48,7 @@ public final class VaspInstance implements
     private final WhisperService whisperService;
     private final MessageService messageService;
     private final ConfirmationService confirmationService;
+    private final VaspIdentityService vaspIdentityService;
     private SessionManager sessionManager;
 
     public VaspInstance(@NonNull final VaspModule module, boolean autoStartSessionManager) {
@@ -56,9 +59,10 @@ public final class VaspInstance implements
         this.whisperService = injector.getInstance(WhisperService.class);
         this.messageService = injector.getInstance(MessageService.class);
         this.confirmationService = injector.getInstance(ConfirmationService.class);
+        this.vaspIdentityService = injector.getInstance(VaspIdentityService.class);
 
         if (autoStartSessionManager) {
-            this.sessionManager = injector.getInstance(SessionManager.class);
+            startSessionManager();
         }
     }
 
@@ -68,7 +72,10 @@ public final class VaspInstance implements
 
     public void startSessionManager() {
         // Start listening for SessionRequest's
-        sessionManager = injector.getInstance(SessionManager.class);
+        if (this.sessionManager == null) {
+            this.sessionManager = injector.getInstance(SessionManager.class);
+            vaspIdentityService.addVaspIdResolver(this.sessionManager::resolveSenderVaspId);
+        }
     }
 
     @Override
@@ -213,8 +220,18 @@ public final class VaspInstance implements
     }
 
     @Override
-    public Session restoreSession(SessionState sessionState) {
+    public Session restoreSession(@NonNull final SessionState sessionState) {
         return sessionManager.restoreSession(sessionState);
+    }
+
+    @Override
+    public Optional<EthAddr> resolveSenderVaspId(@NonNull final VaspMessage message) {
+        return vaspIdentityService.resolveSenderVaspId(message);
+    }
+
+    @Override
+    public void addVaspIdResolver(@NonNull final Function<VaspMessage, Optional<EthAddr>> handler) {
+        vaspIdentityService.addVaspIdResolver(handler);
     }
 
 }

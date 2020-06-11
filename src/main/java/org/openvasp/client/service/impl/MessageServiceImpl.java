@@ -9,7 +9,6 @@ import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.model.EncryptionType;
 import org.openvasp.client.model.Topic;
-import org.openvasp.client.model.VaspInfo;
 import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.service.*;
 
@@ -28,8 +27,6 @@ public final class MessageServiceImpl implements MessageService {
     private final SignService signService;
     private final ConfirmationService confirmationService;
     private final ExceptionHandler exceptionHandler;
-
-    private final VaspInfo senderVaspInfo;
     private final String senderSigningPrivateKey;
 
     @Inject
@@ -44,7 +41,6 @@ public final class MessageServiceImpl implements MessageService {
         this.signService = signService;
         this.confirmationService = confirmationService;
 
-        this.senderVaspInfo = vaspConfig.getVaspInfo();
         this.senderSigningPrivateKey = vaspConfig.getSigningPrivateKey();
         this.exceptionHandler = exceptionHandler;
     }
@@ -57,10 +53,6 @@ public final class MessageServiceImpl implements MessageService {
             @NonNull final VaspMessage message) {
 
         confirmationService.registerForConfirmation(message);
-        if (message.getVaspInfo() == null) {
-            message.setVaspInfo(senderVaspInfo);
-        }
-        message.getVaspInfo().setVaspId(senderVaspInfo.getVaspId());
         whisperService.send(topic, encType, key, signService.makeSignedPayload(message, senderSigningPrivateKey));
     }
 

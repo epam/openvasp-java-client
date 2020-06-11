@@ -1,5 +1,6 @@
 package org.openvasp.client.session;
 
+import org.openvasp.client.model.EthAddr;
 import org.openvasp.client.model.TransferInfo;
 import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.session.impl.SessionState;
@@ -28,5 +29,7 @@ public interface SessionManager {
     boolean waitForNoActiveSessions(long msTimeout);
 
     Session restoreSession(SessionState sessionState);
+
+    Optional<EthAddr> resolveSenderVaspId(VaspMessage message);
 
 }

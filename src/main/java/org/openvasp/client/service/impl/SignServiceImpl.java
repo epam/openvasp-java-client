@@ -3,6 +3,7 @@ package org.openvasp.client.service.impl;
 import com.google.common.annotations.VisibleForTesting;
 import org.bouncycastle.util.encoders.Hex;
 import org.openvasp.client.service.ContractService;
+import org.openvasp.client.service.VaspIdentityService;
 import org.web3j.crypto.*;
 import org.web3j.utils.Numeric;
 
@@ -12,6 +13,8 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static org.openvasp.client.common.Constants.SIGNATURE_LENGTH;
+
 /**
  * @author Jan_Juraszek@epam.com
  * @author Olexandr_Bilovol@epam.com
@@ -19,11 +22,12 @@ import java.util.Arrays;
 @Singleton
 public final class SignServiceImpl extends SignServiceBaseImpl {
 
-    public static final int SIGNATURE_LENGTH = 130;
-
     @Inject
-    public SignServiceImpl(final ContractService contractService) {
-        super(contractService);
+    public SignServiceImpl(
+            final ContractService contractService,
+            final VaspIdentityService vaspIdentityService) {
+
+        super(contractService, vaspIdentityService);
     }
 
     @Override

@@ -5,33 +5,6 @@
     "session": "0x5f2f9ea97f7e461b982ce0230a8b9c8d",
     "code": "1"
   },
-  "originator": {
-    "name": "Originator-1",
-    "vaan": "7dface6100000000000001a7",
-    "bic": "PBANUA2XDZF"
-  },
-  "beneficiary": {
-    "name": "Beneficiary-1",
-    "vaan": "bbb4ee5c00000000000005be"
-  },
-  "transfer": {
-    "va": "ETH",
-    "ttype": "1",
-    "amount": 101,
-    "destination": "DADDR01"
-  },
-  "vasp": {
-    "name": "VASP-1",
-    "id": "0x6befaf0656b953b188a0ee3bf3db03d07dface61",
-    "pk": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
-    "address": {
-        "street": "Kappelergasse",
-        "number": "1",
-        "adrline": "Fraumunsterpost",
-        "postcode": "8022",
-        "town": "Zurich",
-        "country": "CH"
-    }
-  },
-  "comment": "TRANSFER_REPLY"
+  "comment": "TRANSFER_REPLY",
+  "destinationAddr": "DADDR01"
 }

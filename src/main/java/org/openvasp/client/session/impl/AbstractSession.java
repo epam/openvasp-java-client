@@ -64,8 +64,8 @@ abstract class AbstractSession implements Session {
     }
 
     @Override
-    public VaspCode vaspCode() {
-        return owner.vaspCode();
+    public VaspInfo vaspInfo() {
+        return owner.vaspInfo;
     }
 
     @Override
@@ -78,9 +78,6 @@ abstract class AbstractSession implements Session {
         return transferInfo;
     }
 
-    @Override
-    public abstract VaspCode peerVaspCode();
-
     abstract Topic incomingMessageTopic();
 
     abstract Topic outgoingMessageTopic();
@@ -89,7 +86,6 @@ abstract class AbstractSession implements Session {
     public void sendMessage(@NonNull final VaspMessage message) {
         message.getHeader().setMessageId(VaspUtils.newMessageId());
         message.getHeader().setSessionId(sessionId);
-        message.setVaspInfo(owner.vaspInfo);
 
         messageService().send(
                 outgoingMessageTopic(),

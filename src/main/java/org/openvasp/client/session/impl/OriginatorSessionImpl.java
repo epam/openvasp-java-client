@@ -8,6 +8,7 @@ import org.openvasp.client.model.*;
 import org.openvasp.client.service.TopicEvent;
 import org.openvasp.client.session.OriginatorSession;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.openvasp.client.model.VaspResponseCode.OK;
 
 /**
@@ -30,7 +31,7 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
         this.topicA = Topic.newRandom();
         this.topicB = null;
         val sessionKeyPair = ECDHKeyPair.generateKeyPair();
-        val contract = contractService().getVaspContractInfo(peerVaspCode());
+        val contract = contractService().getVaspContractInfo(transferInfo.getBeneficiary().getVaan().getVaspCode());
         this.sharedSecret = sessionKeyPair.generateSharedSecretHex(contract.getHandshakeKey());
         this.sessionPublicKey = sessionKeyPair.getPublicKey();
 
@@ -71,11 +72,6 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
     }
 
     @Override
-    public VaspCode peerVaspCode() {
-        return transferInfo.getBeneficiary().getVaan().getVaspCode();
-    }
-
-    @Override
     Topic incomingMessageTopic() {
         return topicA;
     }
@@ -87,44 +83,39 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
 
     @Override
     public void sendMessage(@NonNull final VaspMessage message) {
-        if (message instanceof SessionRequest) {
-            val sessionRequest = (SessionRequest) message;
-            sessionRequest.setVaspInfo(owner.vaspInfo);
-
-            val header = sessionRequest.getHeader();
-            header.setMessageId(VaspUtils.newMessageId());
-            header.setSessionId(sessionId());
-            header.setResponseCode(VaspResponseCode.OK.id);
-
-            sessionRequest.setHandshake(SessionMessage.Handshake.builder()
-                    .topicA(topicA)
-                    .sessionPublicKey(sessionPublicKey)
-                    .build());
-
-            val contract = contractService().getVaspContractInfo(peerVaspCode());
-
-            messageService().send(
-                    peerVaspCode().toTopic(),
-                    EncryptionType.ASSYMETRIC,
-                    contract.getHandshakeKey(),
-                    sessionRequest);
-
-            return;
-        }
-
-        if (message instanceof TransferDispatch) {
-            val transferDispatch = (TransferDispatch) message;
-            if (OK.id.equals(transferDispatch.getResponseCode())) {
-                transferInfo.setTx(transferDispatch.getTx());
-            }
-        }
+        checkArgument(
+                !(message instanceof SessionRequest),
+                "SessionRequest must be sent only by 'startTransfer' method.");
 
         super.sendMessage(message);
     }
 
     @Override
     public void startTransfer() {
-        sendMessage(new SessionRequest());
+        val sessionRequest = new SessionRequest();
+
+        // Header
+        val header = sessionRequest.getHeader();
+        header.setMessageId(VaspUtils.newMessageId());
+        header.setSessionId(sessionId());
+        header.setResponseCode(VaspResponseCode.OK.id);
+
+        // VaspInfo
+        sessionRequest.setVaspInfo(owner.vaspInfo);
+
+        // Handshake
+        sessionRequest.setHandshake(new SessionRequest.Handshake(topicA, sessionPublicKey));
+
+        // Beneficiary contract
+        val beneficiaryVaspCode = transferInfo.getBeneficiary().getVaan().getVaspCode();
+        val beneficiaryContract = contractService().getVaspContractInfo(beneficiaryVaspCode);
+
+        // Send message by MessageService
+        messageService().send(
+                beneficiaryVaspCode.toTopic(),
+                EncryptionType.ASSYMETRIC,
+                beneficiaryContract.getHandshakeKey(),
+                sessionRequest);
     }
 
     @Override
@@ -141,9 +132,9 @@ final class OriginatorSessionImpl extends AbstractSession implements OriginatorS
         }
 
         if (message instanceof TransferReply) {
-            val transferReply = (TransferReply) message;
+            val sessionReply = (TransferReply) message;
             if (OK.id.equals(messageCode)) {
-                transferInfo.getTransfer().setDestinationAddress(transferReply.getTransfer().getDestinationAddress());
+                transferInfo.setDestinationAddress(sessionReply.getDestinationAddress());
             }
         }
 

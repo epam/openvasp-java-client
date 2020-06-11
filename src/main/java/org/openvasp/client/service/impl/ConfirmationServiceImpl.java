@@ -5,11 +5,14 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.openvasp.client.common.Tuple2;
+import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.model.EncryptionType;
+import org.openvasp.client.model.VaspContractInfo;
 import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.service.ConfirmationService;
 import org.openvasp.client.service.ContractService;
+import org.openvasp.client.service.VaspIdentityService;
 import org.openvasp.client.service.WhisperService;
 
 import javax.inject.Inject;
@@ -28,6 +31,7 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
     private final VaspConfig vaspConfig;
     private final WhisperService whisperService;
     private final ContractService contractService;
+    private final VaspIdentityService vaspIdentityService;
 
     @Setter
     private Consumer<VaspMessage> confirmationHandler;
@@ -38,11 +42,13 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
     public ConfirmationServiceImpl(
             final VaspConfig vaspConfig,
             final WhisperService whisperService,
-            final ContractService contractService) {
+            final ContractService contractService,
+            final VaspIdentityService vaspIdentityService) {
 
         this.vaspConfig = vaspConfig;
         this.whisperService = whisperService;
         this.contractService = contractService;
+        this.vaspIdentityService = vaspIdentityService;
     }
 
     @Override
@@ -89,9 +95,10 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
     }
 
     private String getConfirmationPublicKey(@NonNull final VaspMessage message) {
-        val senderVaspCode = message.getVaspInfo().getVaspCode();
-        val senderContract = contractService.getVaspContractInfo(senderVaspCode);
-        return senderContract.getHandshakeKey();
+        return vaspIdentityService.resolveSenderVaspId(message)
+                .map(contractService::getVaspContractInfo)
+                .map(VaspContractInfo::getHandshakeKey)
+                .orElseThrow(() -> new VaspValidationException(message, "Sender's VASP ID cannot be resolved"));
     }
 
     private boolean isConfirmationEnabled() {
