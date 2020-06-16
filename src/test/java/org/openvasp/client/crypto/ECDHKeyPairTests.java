@@ -45,4 +45,17 @@ public class ECDHKeyPairTests {
         assertThat(sharedSecret12).isEqualTo(sharedSecret21);
     }
 
+    @Test
+    public void checkSessionPublicKey() {
+        val privateKey = "0x502eb0b1a40d5b788b2395394bc6ae47adae61e9f0a9584c4700132914a8ed04";
+
+        // public key is "0x04" + ecdhpk where ecdhpk is taken from the JSON sample
+        // at https://github.com/LykkeBusiness/openvasp-message-samples/blob/master/session-request.txt
+        val publicKey = "0x04ac7c9764497e5e5d3c42a4cc0b1425fda9f7564e49f288994fdbbb42e5731bb0f30f82e1890459cb40325989a6a872a963d40efdbc88d66e427da1ecded0e4c2";
+
+        val keyPair = ECDHKeyPair.importPrivateKey(privateKey);
+        val sharedSecret = keyPair.generateSharedSecretHex(publicKey);
+        assertThat(sharedSecret).isEqualTo("0x182fef693d3c2289d101bf708049abb2099540bafe7b0e05ffbb40c1fb3eccce");
+    }
+
 }

@@ -25,7 +25,7 @@ final class BeneficiarySessionImpl extends AbstractSession implements Beneficiar
         this.topicA = sessionRequest.getHandshake().getTopicA();
         this.topicB = Topic.newRandom();
         val sessionKeyPair = ECDHKeyPair.importPrivateKey(owner.handshakePrivateKey);
-        this.sharedSecret = sessionKeyPair.generateSharedSecretHex(sessionRequest.getHandshake().getSessionPublicKey());
+        this.sharedSecret = sessionKeyPair.generateSharedSecretHex(sessionRequest.getSessionPublicKey());
 
         this.setMessageHandler(owner.messageHandler);
 
