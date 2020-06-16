@@ -1,6 +1,7 @@
 package org.openvasp.client.service.impl;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.openvasp.client.common.Json;
@@ -16,6 +17,7 @@ import static org.openvasp.client.common.VaspUtils.hexStrEncode;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
+@Slf4j
 abstract class SignServiceBaseImpl implements SignService {
 
     private final ContractService contractService;
@@ -39,7 +41,10 @@ abstract class SignServiceBaseImpl implements SignService {
     @Override
     public VaspMessage extractSignedMessage(@NonNull final String whisperPayload) {
         val payload = StringUtils.left(whisperPayload, whisperPayload.length() - signatureLength());
+
         val json = hexStrDecode(payload);
+        log.debug("RECEIVE: {}", json);
+
         val signature = StringUtils.right(whisperPayload, signatureLength());
 
         val message = VaspMessage.fromJson(json);

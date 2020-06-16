@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.openvasp.client.api.whisper.model.ShhMessage;
 import org.openvasp.client.common.ExceptionHandler;
+import org.openvasp.client.common.Json;
 import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
 import org.openvasp.client.model.EncryptionType;
@@ -52,6 +53,7 @@ public final class MessageServiceImpl implements MessageService {
             @NonNull final String key,
             @NonNull final VaspMessage message) {
 
+        log.debug("SEND: {}", Json.toJson(message));
         confirmationService.registerForConfirmation(message);
         whisperService.send(topic, encType, key, signService.makeSignedPayload(message, senderSigningPrivateKey));
     }
