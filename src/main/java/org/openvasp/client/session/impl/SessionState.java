@@ -23,6 +23,9 @@ public final class SessionState {
         BENEFICIARY
     }
 
+    public SessionState() {
+    }
+
     @JsonProperty
     private String id;
 
