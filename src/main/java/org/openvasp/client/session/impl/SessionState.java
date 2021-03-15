@@ -1,10 +1,7 @@
 package org.openvasp.client.session.impl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.openvasp.client.model.Topic;
 import org.openvasp.client.model.TransferInfo;
 import org.openvasp.client.model.VaspInfo;
@@ -14,6 +11,7 @@ import org.openvasp.client.model.VaspInfo;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public final class SessionState {
@@ -22,10 +20,7 @@ public final class SessionState {
         ORIGINATOR,
         BENEFICIARY
     }
-
-    public SessionState() {
-    }
-
+    
     @JsonProperty
     private String id;
 
