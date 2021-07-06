@@ -16,8 +16,6 @@ The protocol facilitates robust compliance for VASPs, solely based on a set of p
 
 [Read more →](doc/reference-architecture.pdf)
 
-![Reference architecture](doc/OpenVASP-whitepaper.png)
-
 ![Reference architecture](doc/OpenVASP-whitepaper.svg)
 
 ## Getting started
