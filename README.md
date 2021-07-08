@@ -2,7 +2,8 @@
 
 ## TODOs
 
-> [ ] Determine tests coverage
+> Determine tests coverage
+> Where does the VASP.abi come from?
 
 This is a reference implementation of a Java client for the OpenVASP standard.
 
