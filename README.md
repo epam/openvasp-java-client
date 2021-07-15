@@ -1,5 +1,7 @@
 # OpenVASP Java Client
 
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/OpenVASP/openvasp-java-client)
+
 ## TODOs
 
 > Determine tests coverage
