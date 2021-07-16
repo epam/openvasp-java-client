@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openvasp</groupId>
@@ -309,6 +308,10 @@
                 <version>1.6.0</version>
                 <executions>
                     <execution>
+                        <!--This plugin's configuration is used to store Eclipse m2e settings only (used in VSCode).
+                            It has no influence on the Maven build itself.
+                            https://www.eclipse.org/m2e/documentation/m2e-execution-not-covered.html -->
+                        <?m2e execute onConfiguration?>
                         <id>Generate VASP contract</id>
                         <goals>
                             <goal>java</goal>
