@@ -1,7 +1,6 @@
 package org.openvasp.client.model;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.openvasp.client.common.JsonPathFixture;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -19,7 +18,7 @@ import static org.openvasp.client.model.VaspMessage.TypeDescriptor;
 /**
  * @author Olexandr_Bilovol@epam.com
  */
-public class JsonSer2Tests {
+class JsonSer2Tests {
 
     private static final String SER_DATA_FOLDER = "serialization/messages";
 
@@ -27,17 +26,17 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void sessionRequest() {
-        val jsonFileName = SER_DATA_FOLDER + "/session-request.json";
-        val sessionRequest = loadTestJson(SessionRequest.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void sessionRequest() {
+        var jsonFileName = SER_DATA_FOLDER + "/session-request.json";
+        var sessionRequest = loadTestJson(SessionRequest.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         sessionRequest.validate();
         checkBaseMessage(sessionRequest, TypeDescriptor.SESSION_REQUEST, jsonFixture);
         checkNaturalPerson(sessionRequest, jsonFixture);
         checkVaspInfo(sessionRequest, TypeDescriptor.SESSION_REQUEST, jsonFixture);
 
-        val handshake = sessionRequest.getHandshake();
+        var handshake = sessionRequest.getHandshake();
         assertThat(handshake).isNotNull();
         jsonFixture.assertEquals(handshake.getTopicA().getData(), "$.handshake.topica");
         jsonFixture.assertEquals(handshake.getSessionPublicKey(), "$.handshake.ecdhpk");
@@ -47,15 +46,15 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void sessionReply() {
-        val jsonFileName = SER_DATA_FOLDER + "/session-reply.json";
-        val sessionReply = loadTestJson(SessionReply.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void sessionReply() {
+        var jsonFileName = SER_DATA_FOLDER + "/session-reply.json";
+        var sessionReply = loadTestJson(SessionReply.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         sessionReply.validate();
         checkBaseMessage(sessionReply, TypeDescriptor.SESSION_REPLY, jsonFixture);
 
-        val handshake = sessionReply.getHandshake();
+        var handshake = sessionReply.getHandshake();
         assertThat(handshake).isNotNull();
         jsonFixture.assertEquals(handshake.getTopicB().getData(), "$.handshake.topicb");
 
@@ -64,17 +63,17 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void transferRequest() {
-        val jsonFileName = SER_DATA_FOLDER + "/transfer-request.json";
-        val transferRequest = loadTestJson(TransferRequest.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void transferRequest() {
+        var jsonFileName = SER_DATA_FOLDER + "/transfer-request.json";
+        var transferRequest = loadTestJson(TransferRequest.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         transferRequest.validate();
         checkBaseMessage(transferRequest, TypeDescriptor.TRANSFER_REQUEST, jsonFixture);
         checkOriginator(transferRequest, jsonFixture);
         checkBenificiary(transferRequest, jsonFixture);
 
-        val transfer = transferRequest.getTransfer();
+        var transfer = transferRequest.getTransfer();
         assertThat(transfer).isNotNull();
         assertThat(transfer.getAssetType()).isEqualTo(TransferRequest.VirtualAssetType.BTC);
         assertThat(transfer.getTransferType()).isEqualTo(TransferRequest.TransferType.BLOCKCHAIN_TRANSFER);
@@ -85,10 +84,10 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void transferReply() {
-        val jsonFileName = SER_DATA_FOLDER + "/transfer-reply.json";
-        val transferReply = loadTestJson(TransferReply.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void transferReply() {
+        var jsonFileName = SER_DATA_FOLDER + "/transfer-reply.json";
+        var transferReply = loadTestJson(TransferReply.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         transferReply.validate();
         checkBaseMessage(transferReply, TypeDescriptor.TRANSFER_REPLY, jsonFixture);
@@ -99,15 +98,15 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void transferDispatch() {
-        val jsonFileName = SER_DATA_FOLDER + "/transfer-dispatch.json";
-        val transferDispatch = loadTestJson(TransferDispatch.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void transferDispatch() {
+        var jsonFileName = SER_DATA_FOLDER + "/transfer-dispatch.json";
+        var transferDispatch = loadTestJson(TransferDispatch.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         transferDispatch.validate();
         checkBaseMessage(transferDispatch, TypeDescriptor.TRANSFER_DISPATCH, jsonFixture);
 
-        val transaction = transferDispatch.getTx();
+        var transaction = transferDispatch.getTx();
         assertThat(transaction).isNotNull();
         assertThat(transaction.getId()).isEqualTo("hash");
         assertThat(transaction.getDateTime()).isEqualTo(ZonedDateTime.parse("2020-06-08T09:36:29Z"));
@@ -118,10 +117,10 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void transferConfirmation() {
-        val jsonFileName = SER_DATA_FOLDER + "/transfer-confirmation.json";
-        val transferConfirmation = loadTestJson(TransferConfirmation.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void transferConfirmation() {
+        var jsonFileName = SER_DATA_FOLDER + "/transfer-confirmation.json";
+        var transferConfirmation = loadTestJson(TransferConfirmation.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         transferConfirmation.validate();
         checkBaseMessage(transferConfirmation, TypeDescriptor.TRANSFER_CONFIRMATION, jsonFixture);
@@ -131,10 +130,10 @@ public class JsonSer2Tests {
 
     @Test
     @SneakyThrows
-    public void termination() {
-        val jsonFileName = SER_DATA_FOLDER + "/termination.json";
-        val termination = loadTestJson(TerminationMessage.class, jsonFileName);
-        val jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
+    void termination() {
+        var jsonFileName = SER_DATA_FOLDER + "/termination.json";
+        var termination = loadTestJson(TerminationMessage.class, jsonFileName);
+        var jsonFixture = new JsonPathFixture(loadTestJson(jsonFileName));
 
         termination.validate();
         checkBaseMessage(termination, TypeDescriptor.TERMINATION, jsonFixture);
@@ -147,7 +146,7 @@ public class JsonSer2Tests {
             final TypeDescriptor expectedType,
             final JsonPathFixture jsonFixture) {
 
-        val msg = message.getHeader();
+        var msg = message.getHeader();
         assertThat(msg).isNotNull();
         assertThat(msg.getMessageType()).isEqualTo(expectedType);
         jsonFixture.assertEquals(msg.getMessageId(), "$.msg.msgid");
@@ -163,13 +162,13 @@ public class JsonSer2Tests {
             final TypeDescriptor expectedType,
             final JsonPathFixture jsonFixture) {
 
-        val vasp = message.getVaspInfo();
+        var vasp = message.getVaspInfo();
         assertThat(vasp).isNotNull();
         jsonFixture.assertEquals(vasp.getName(), "$.vasp.name");
         jsonFixture.assertEquals(vasp.getVaspId().toString(), "$.vasp.id");
         jsonFixture.assertEquals(vasp.getPk(), "$.vasp.pk");
 
-        val address = vasp.getAddress();
+        var address = vasp.getAddress();
         assertThat(address).isNotNull();
         jsonFixture.assertEquals(address.getStreet(), "$.vasp.address.street");
         jsonFixture.assertEquals(address.getNumber(), "$.vasp.address.number");
@@ -183,44 +182,45 @@ public class JsonSer2Tests {
             final SessionMessage message,
             final JsonPathFixture jsonFixture) {
 
-        val birth = message.getVaspInfo().getBirth();
+        var birth = message.getVaspInfo().getBirth();
         assertThat(birth).isNotNull();
         jsonFixture.assertEquals(birthDateFormat.format(birth.getBirthDate()), "$.vasp.birth.birthdate");
         jsonFixture.assertEquals(birth.getBirthCity(), "$.vasp.birth.birthcity");
         jsonFixture.assertEquals(birth.getBirthCountry().getCode(), "$.vasp.birth.birthcountry");
 
-        val nat = message.getVaspInfo().getNat();
+        var nat = message.getVaspInfo().getNat();
         assertThat(nat).isNotNull();
         assertThat(nat.size()).isEqualTo(1);
         assertThat(nat.get(0).getNatIdType()).isEqualTo(NaturalPersonId.NatIdType.PASSPORT_NUMBER);
         assertThat(nat.get(0).getNatId()).isEqualTo("ID");
         assertThat(nat.get(0).getNatIdCountry()).isEqualTo(Country.ALL.get("DE"));
-        assertThat(nat.get(0).getNatIdIssuer()).isEqualTo("");
+        assertThat(nat.get(0).getNatIdIssuer()).isEmpty();;
     }
 
+    @SuppressWarnings("unused")
     private void checkJuridicalPerson(
             final SessionMessage message,
             final JsonPathFixture jsonFixture) {
 
-        val jur = message.getVaspInfo().getJur();
+        var jur = message.getVaspInfo().getJur();
         assertThat(jur).isNotNull();
         assertThat(jur.size()).isEqualTo(1);
         assertThat(jur.get(0).getJurIdType()).isEqualTo(JuridicalPersonId.JurIdType.BANK_PARTY_IDENTIFICATION);
         assertThat(jur.get(0).getJurId()).isEqualTo("ID");
         assertThat(jur.get(0).getJurIdCountry()).isEqualTo(Country.ALL.get("DE"));
-        assertThat(jur.get(0).getJurIdIssuer()).isEqualTo("");
+        assertThat(jur.get(0).getJurIdIssuer()).isEmpty();;
     }
 
     private void checkOriginator(
             final TransferRequest message,
             final JsonPathFixture jsonFixture) {
 
-        val originator = message.getOriginator();
+        var originator = message.getOriginator();
         assertThat(originator).isNotNull();
         assertThat(originator.getName()).isEqualTo("Test van der Test");
         jsonFixture.assertEquals(originator.getVaan().getData(), "$.originator.vaan");
 
-        val originatorAddress = originator.getAddress();
+        var originatorAddress = originator.getAddress();
         assertThat(originatorAddress).isNotNull();
         assertThat(originatorAddress.getStreet()).isEqualTo("StreetX");
         assertThat(originatorAddress.getNumber()).isEqualTo("44");
@@ -229,34 +229,34 @@ public class JsonSer2Tests {
         assertThat(originatorAddress.getTown()).isEqualTo("TownX");
         assertThat(originatorAddress.getCountry()).isEqualTo(Country.ALL.get("DE"));
 
-        val originatorBirth = originator.getBirth();
+        var originatorBirth = originator.getBirth();
         assertThat(originatorBirth).isNotNull();
         assertThat(originatorBirth.getBirthDate()).isEqualTo("1990-06-08");
         assertThat(originatorBirth.getBirthCity()).isEqualTo("TownX");
         assertThat(originatorBirth.getBirthCountry()).isEqualTo(Country.ALL.get("DE"));
 
-        val originatorNat = originator.getNat();
+        var originatorNat = originator.getNat();
         assertThat(originatorNat).isNotNull();
         assertThat(originatorNat.size()).isEqualTo(1);
         assertThat(originatorNat.get(0).getNatIdType()).isEqualTo(NaturalPersonId.NatIdType.NATIONAL_IDENTITY_NUMBER);
         assertThat(originatorNat.get(0).getNatId()).isEqualTo("Id");
         assertThat(originatorNat.get(0).getNatIdCountry()).isEqualTo(Country.ALL.get("DE"));
-        assertThat(originatorNat.get(0).getNatIdIssuer()).isEqualTo("");
+        assertThat(originatorNat.get(0).getNatIdIssuer()).isEmpty();
     }
 
     private void checkBenificiary(
             final TransferRequest message,
             final JsonPathFixture jsonFixture) {
 
-        val beneficiary = message.getBeneficiary();
+        var beneficiary = message.getBeneficiary();
         assertThat(beneficiary).isNotNull();
         assertThat(beneficiary.getName()).isEqualTo("name");
-        val vaan = beneficiary.getVaan();
+        var vaan = beneficiary.getVaan();
         assertThat(vaan.getData()).isEqualTo("BBB4eE5C524ee3fb08280970");
         assertThat(vaan.getCustomerNr()).isEqualTo("524ee3fb082809");
         assertThat(vaan.getCheckSum()).isEqualTo("70");
-        val vaspCode = vaan.getVaspCode();
-        assertThat(vaspCode.toString()).isEqualTo("BBB4eE5C");
+        var vaspCode = vaan.getVaspCode();
+        assertThat(vaspCode).hasToString("BBB4eE5C");
     }
 
 }

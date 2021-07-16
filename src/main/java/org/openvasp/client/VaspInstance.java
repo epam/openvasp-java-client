@@ -64,6 +64,8 @@ public final class VaspInstance implements
         if (autoStartSessionManager) {
             startSessionManager();
         }
+
+        log.info("VASP Instance created");
     }
 
     public VaspInstance(@NonNull final VaspModule module) {

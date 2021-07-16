@@ -3,7 +3,6 @@ package org.openvasp.client.service.impl;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.openvasp.client.common.Tuple2;
 import org.openvasp.client.common.VaspValidationException;
 import org.openvasp.client.config.VaspConfig;
@@ -49,6 +48,8 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
         this.whisperService = whisperService;
         this.contractService = contractService;
         this.vaspIdentityService = vaspIdentityService;
+
+        log.info("Confirmation Service created");
     }
 
     @Override
@@ -57,15 +58,15 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
             return;
         }
 
-        val messageId = message.getHeader().getMessageId();
-        val confirmationTopic = message.getConfirmationTopic();
+        var messageId = message.getHeader().getMessageId();
+        var confirmationTopic = message.getConfirmationTopic();
 
-        val listenerId = whisperService.addTopicListener(
+        var listenerId = whisperService.addTopicListener(
                 confirmationTopic,
                 EncryptionType.ASSYMETRIC,
                 getConfirmationPrivateKey(),
-                (whisperMessage) -> {
-                    val entry = waitingForConfirmation.get(messageId);
+                whisperMessage -> {
+                    var entry = waitingForConfirmation.get(messageId);
                     if (entry != null) {
                         waitingForConfirmation.remove(messageId);
                         whisperService.removeTopicListener(confirmationTopic, entry._1);
@@ -81,7 +82,7 @@ public final class ConfirmationServiceImpl implements ConfirmationService {
     @Override
     public void confirmReceipt(@NonNull final VaspMessage message) {
         if (isConfirmationEnabled()) {
-            val confirmationTopic = message.getConfirmationTopic();
+            var confirmationTopic = message.getConfirmationTopic();
             whisperService.send(
                     confirmationTopic,
                     EncryptionType.ASSYMETRIC,

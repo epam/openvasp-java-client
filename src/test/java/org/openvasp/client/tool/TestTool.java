@@ -80,7 +80,7 @@ public final class TestTool {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     private static void createEcKeyPair() {
         val ecKeyPair = Keys.createEcKeyPair();
         val privateKey = Hex.toHexString(BigIntegers.asUnsignedByteArray(ecKeyPair.getPrivateKey()));
@@ -91,7 +91,7 @@ public final class TestTool {
         System.out.format("Address=%s%n", credentials.getAddress());
     }
 
-    @SuppressWarnings("unused")
+    // @SuppressWarnings("unused")
     private static void generateVaans(final String vaspCodeHex, int start, int count) {
         val vaspCode = new VaspCode(vaspCodeHex);
         for (int i = start; i < start + count; i++) {

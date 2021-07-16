@@ -6,7 +6,6 @@ import org.bouncycastle.util.encoders.Base64;
 import org.openvasp.client.common.Json;
 import org.openvasp.client.model.InfuraConfig;
 import org.openvasp.client.service.EnsService;
-import org.openvasp.client.service.impl.EnsServiceImpl;
 import org.openvasp.client.service.impl.EnsServiceMock;
 
 import static org.openvasp.client.common.TestConstants.*;

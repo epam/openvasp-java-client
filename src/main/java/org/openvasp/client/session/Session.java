@@ -1,7 +1,6 @@
 package org.openvasp.client.session;
 
 import org.openvasp.client.model.TransferInfo;
-import org.openvasp.client.model.VaspCode;
 import org.openvasp.client.model.VaspInfo;
 import org.openvasp.client.model.VaspMessage;
 import org.openvasp.client.session.impl.SessionState;

@@ -240,35 +240,35 @@ public abstract class BaseRecordingTransferIT {
         // The 3d message is TransferRequest and it is processed at the beneficiary side
         assertThat(transferLog.get(2).vaspCode).isEqualTo(beneficiaryVaspCode);
         assertThat(transferLog.get(2).vaspMessage).isInstanceOf(TransferRequest.class);
-        val message2 = transferLog.get(2).vaspMessage.asTransferRequest();
+        // val message2 = transferLog.get(2).vaspMessage.asTransferRequest();
         // The sender is the originator
         assertThat(transferLog.get(2).peerVaspCode).isEqualTo(originatorVaspCode);
 
         // The 4th message is TransferReply and it is processed at the originator side
         assertThat(transferLog.get(3).vaspCode).isEqualTo(originatorVaspCode);
         assertThat(transferLog.get(3).vaspMessage).isInstanceOf(TransferReply.class);
-        val message3 = transferLog.get(3).vaspMessage.asTransferReply();
+        // val message3 = transferLog.get(3).vaspMessage.asTransferReply();
         // The sender is the beneficiary
         assertThat(transferLog.get(3).peerVaspCode).isEqualTo(beneficiaryVaspCode);
 
         // The 5th message is TransferDispatch and it is processed at the beneficiary side
         assertThat(transferLog.get(4).vaspCode).isEqualTo(beneficiaryVaspCode);
         assertThat(transferLog.get(4).vaspMessage).isInstanceOf(TransferDispatch.class);
-        val message4 = transferLog.get(4).vaspMessage.asTransferDispatch();
+        // val message4 = transferLog.get(4).vaspMessage.asTransferDispatch();
         // The sender is the originator
         assertThat(transferLog.get(4).peerVaspCode).isEqualTo(originatorVaspCode);
 
         // The 6th message is TransferConfirmation and it is processed at the originator side
         assertThat(transferLog.get(5).vaspCode).isEqualTo(originatorVaspCode);
         assertThat(transferLog.get(5).vaspMessage).isInstanceOf(TransferConfirmation.class);
-        val message5 = transferLog.get(5).vaspMessage.asTransferConfirmation();
+        // val message5 = transferLog.get(5).vaspMessage.asTransferConfirmation();
         // The sender is the beneficiary
         assertThat(transferLog.get(5).peerVaspCode).isEqualTo(beneficiaryVaspCode);
 
         // The 7th message is TerminationMessage and it is processed at the beneficiary side
         assertThat(transferLog.get(6).vaspCode).isEqualTo(beneficiaryVaspCode);
         assertThat(transferLog.get(6).vaspMessage).isInstanceOf(TerminationMessage.class);
-        val message6 = transferLog.get(6).vaspMessage.asTerminationMessage();
+        // val message6 = transferLog.get(6).vaspMessage.asTerminationMessage();
         // The sender is the originator
         assertThat(transferLog.get(6).peerVaspCode).isEqualTo(originatorVaspCode);
     }

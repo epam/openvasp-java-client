@@ -46,7 +46,7 @@ import static java.util.stream.Collectors.toList;
  */
 @Singleton
 @Slf4j
-public final class WhisperServiceImpl implements AutoCloseable, WhisperService {
+public final class WhisperServiceImpl implements WhisperService {
 
     private static final BigInteger TTL = BigInteger.valueOf(60);
     private static final BigInteger POW_TIME = BigInteger.valueOf(20);
