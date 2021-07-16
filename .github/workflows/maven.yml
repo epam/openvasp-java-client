@@ -30,4 +30,4 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
     - name: Build, test & package with Maven
-      run: mvn package
+      run: mvn --batch-mode package
