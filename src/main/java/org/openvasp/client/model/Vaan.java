@@ -46,12 +46,16 @@ public final class Vaan implements Serializable {
         this.data = raw + checkSum8Modulo256(raw);
     }
 
+    public String getVaspCodeType() {
+        return data.substring(0, 2);
+    }
+
     public VaspCode getVaspCode() {
-        return new VaspCode(data.substring(0, 8));
+        return new VaspCode(data.substring(4, 12));
     }
 
     public String getCustomerNr() {
-        return data.substring(8, 22);
+        return data.substring(12, 22);
     }
 
     public String getCheckSum() {
