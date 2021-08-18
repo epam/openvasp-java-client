@@ -47,21 +47,21 @@ public interface TestConstants {
     String VASP_CONTRACT_LOCAL_3 = "vasp-config/local/vasp-contract-3.json";
 
     Vaan[] VAAN_1_LIST = {
-            new Vaan("7dface6100000000000001a7"),
-            new Vaan("7dface6100000000000002a8"),
-            new Vaan("7dface6100000000000003a9")
+            new Vaan("10007dface610000000001b7"),
+            new Vaan("10007dface610000000002b8"),
+            new Vaan("10007dface610000000003b9")
     };
 
     Vaan[] VAAN_2_LIST = {
-            new Vaan("bbb4ee5c00000000000005be"),
-            new Vaan("bbb4ee5c00000000000006bf"),
-            new Vaan("bbb4ee5c00000000000007c0")
+            new Vaan("1000bbb4ee5c0000000005ce"),
+            new Vaan("1000bbb4ee5c0000000006cf"),
+            new Vaan("1000bbb4ee5c0000000007d0")
     };
 
     Vaan[] VAAN_3_LIST = {
-            new Vaan("1cd48daa0000000000000a31"),
-            new Vaan("1cd48daa0000000000000b32"),
-            new Vaan("1cd48daa0000000000000c33")
+            new Vaan("10001cd48daa000000000a41"),
+            new Vaan("10001cd48daa000000000b42"),
+            new Vaan("10001cd48daa000000000c43")
     };
 
     long WAIT_TIMEOUT_1 = 25000;

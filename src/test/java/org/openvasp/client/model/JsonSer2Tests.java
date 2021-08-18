@@ -71,7 +71,7 @@ class JsonSer2Tests {
         transferRequest.validate();
         checkBaseMessage(transferRequest, TypeDescriptor.TRANSFER_REQUEST, jsonFixture);
         checkOriginator(transferRequest, jsonFixture);
-        checkBenificiary(transferRequest, jsonFixture);
+        checkBeneficiary(transferRequest, jsonFixture);
 
         var transfer = transferRequest.getTransfer();
         assertThat(transfer).isNotNull();
@@ -194,7 +194,7 @@ class JsonSer2Tests {
         assertThat(nat.get(0).getNatIdType()).isEqualTo(NaturalPersonId.NatIdType.PASSPORT_NUMBER);
         assertThat(nat.get(0).getNatId()).isEqualTo("ID");
         assertThat(nat.get(0).getNatIdCountry()).isEqualTo(Country.ALL.get("DE"));
-        assertThat(nat.get(0).getNatIdIssuer()).isEmpty();;
+        assertThat(nat.get(0).getNatIdIssuer()).isEmpty();
     }
 
     @SuppressWarnings("unused")
@@ -208,7 +208,7 @@ class JsonSer2Tests {
         assertThat(jur.get(0).getJurIdType()).isEqualTo(JuridicalPersonId.JurIdType.BANK_PARTY_IDENTIFICATION);
         assertThat(jur.get(0).getJurId()).isEqualTo("ID");
         assertThat(jur.get(0).getJurIdCountry()).isEqualTo(Country.ALL.get("DE"));
-        assertThat(jur.get(0).getJurIdIssuer()).isEmpty();;
+        assertThat(jur.get(0).getJurIdIssuer()).isEmpty();
     }
 
     private void checkOriginator(
@@ -244,7 +244,7 @@ class JsonSer2Tests {
         assertThat(originatorNat.get(0).getNatIdIssuer()).isEmpty();
     }
 
-    private void checkBenificiary(
+    private void checkBeneficiary(
             final TransferRequest message,
             final JsonPathFixture jsonFixture) {
 
@@ -252,11 +252,12 @@ class JsonSer2Tests {
         assertThat(beneficiary).isNotNull();
         assertThat(beneficiary.getName()).isEqualTo("name");
         var vaan = beneficiary.getVaan();
-        assertThat(vaan.getData()).isEqualTo("BBB4eE5C524ee3fb08280970");
-        assertThat(vaan.getCustomerNr()).isEqualTo("524ee3fb082809");
-        assertThat(vaan.getCheckSum()).isEqualTo("70");
+        assertThat(vaan.getData()).isEqualTo("1000BBB4eE5Ce3fb082809e0");
+        assertThat(vaan.getCustomerNr()).isEqualTo("e3fb082809");
+        assertThat(vaan.getCheckSum()).isEqualTo("e0");
         var vaspCode = vaan.getVaspCode();
         assertThat(vaspCode).hasToString("BBB4eE5C");
+        var vaspCodeType = vaan.getVaspCodeType();
+        assertThat(vaspCodeType).isEqualTo("10");
     }
-
 }

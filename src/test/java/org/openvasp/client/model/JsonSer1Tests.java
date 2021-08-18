@@ -37,8 +37,8 @@ public class JsonSer1Tests {
 
         val vaan = beneficiary.getVaan();
         originatorFixture.assertEquals(vaan.getData(), "$.vaan");
-        assertThat(vaan.getCustomerNr()).isEqualTo("a0b1c2d3e4f5ff");
-        assertThat(vaan.getCheckSum()).isEqualTo("a4");
+        assertThat(vaan.getCustomerNr()).isEqualTo("c2d3e4f5ff");
+        assertThat(vaan.getCheckSum()).isEqualTo("63");
 
         val vaspCode = vaan.getVaspCode();
         assertThat(vaspCode.toString()).isEqualTo("a0b1c2d3");
@@ -106,8 +106,9 @@ public class JsonSer1Tests {
 
         val vaan = originator.getVaan();
         originatorFixture.assertEquals(vaan.getData(), "$.vaan");
-        assertThat(vaan.getCustomerNr()).isEqualTo("a0b1c2d3e4f5ff");
-        assertThat(vaan.getCheckSum()).isEqualTo("a4");
+        assertThat(vaan.getCustomerNr()).isEqualTo("c2d3e4f5ff");
+        assertThat(vaan.getVaspCodeType()).isEqualTo("10");
+        assertThat(vaan.getCheckSum()).isEqualTo("63");
 
         val address = originator.getAddress();
         assertThat(address.getStreet()).isEqualTo("Kappelergasse");
