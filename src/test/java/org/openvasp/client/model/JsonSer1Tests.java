@@ -107,7 +107,7 @@ public class JsonSer1Tests {
         val vaan = originator.getVaan();
         originatorFixture.assertEquals(vaan.getData(), "$.vaan");
         assertThat(vaan.getCustomerNr()).isEqualTo("c2d3e4f5ff");
-        assertThat(vaan.getVaspCodeType()).isEqualTo("10");
+        assertThat(vaan.getVaspCodeType()).isEqualTo(new VaspCodeType("10"));
         assertThat(vaan.getCheckSum()).isEqualTo("ce");
 
         val address = originator.getAddress();

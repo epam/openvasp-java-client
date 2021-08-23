@@ -45,18 +45,14 @@ public final class Vaan implements Serializable {
     }
 
     public Vaan(@NonNull final VaspCode vaspCode, @NonNull final String customerNr) {
-        checkArgument(customerNr.length() == 14);
+        checkArgument(customerNr.length() == 10);
         val raw = vaspCode + customerNr;
         this.data = raw + checkSumCrc8Wcdma(raw);
     }
 
-    public String getVaspCodeType() {
-        return data.substring(0, 2);
-    }
+    public VaspCodeType getVaspCodeType() { return new VaspCodeType(data.substring(0, 2)); }
 
-    public VaspCode getVaspCode() {
-        return new VaspCode(data.substring(4, 12));
-    }
+    public VaspCode getVaspCode() { return new VaspCode(data.substring(4, 12)); }
 
     public String getCustomerNr() {
         return data.substring(12, 22);

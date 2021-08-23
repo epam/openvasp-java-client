@@ -258,6 +258,6 @@ class JsonSer2Tests {
         var vaspCode = vaan.getVaspCode();
         assertThat(vaspCode).hasToString("bbb4ee5c");
         var vaspCodeType = vaan.getVaspCodeType();
-        assertThat(vaspCodeType).isEqualTo("10");
+        assertThat(vaspCodeType).isEqualTo(new VaspCodeType("10"));
     }
 }
