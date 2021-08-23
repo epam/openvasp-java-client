@@ -2,18 +2,19 @@ package org.openvasp.client.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.snksoft.crc.CRC;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.openvasp.client.common.VaspUtils.toBytes;
-import static org.openvasp.client.common.VaspUtils.toHex;
 
 /**
  * Virtual Assets Account Number
@@ -25,25 +26,28 @@ public final class Vaan implements Serializable {
 
     private static final String VAAN_FORMAT_ERROR = "VAAN should be a hexadecimal string of the length 24";
     private static final String VAAN_CHECKSUM_ERROR = "Invalid VAAN checksum: expected 0x%s but actual 0x%s";
+    private static final CRC.Parameters CRC8_WCDMA = new CRC.Parameters(8, 0x9B, 0x00, true, true, 0x00);
 
     @Getter(onMethod_ = {@JsonValue})
     private final String data;
 
     @JsonCreator
     public Vaan(@NonNull final String data) {
-        checkArgument(data.length() == 24, VAAN_FORMAT_ERROR);
-        val expectedCheckSum = checkSum8Modulo256(data.substring(0, data.length() - 2));
-        val actualCheckSum = data.substring(data.length() - 2);
+        String dataWithoutWhitespace = StringUtils.deleteWhitespace(data).toLowerCase();
+        checkArgument(dataWithoutWhitespace.length() == 24, VAAN_FORMAT_ERROR);
+        val expectedCheckSum = checkSumCrc8Wcdma(dataWithoutWhitespace.substring(0,
+                dataWithoutWhitespace.length() - 2));
+        val actualCheckSum = dataWithoutWhitespace.substring(dataWithoutWhitespace.length() - 2);
         checkArgument(
                 actualCheckSum.equals(expectedCheckSum),
                 String.format(VAAN_CHECKSUM_ERROR, expectedCheckSum, actualCheckSum));
-        this.data = data;
+        this.data = dataWithoutWhitespace;
     }
 
     public Vaan(@NonNull final VaspCode vaspCode, @NonNull final String customerNr) {
         checkArgument(customerNr.length() == 14);
         val raw = vaspCode + customerNr;
-        this.data = raw + checkSum8Modulo256(raw);
+        this.data = raw + checkSumCrc8Wcdma(raw);
     }
 
     public String getVaspCodeType() {
@@ -64,16 +68,14 @@ public final class Vaan implements Serializable {
 
     @Override
     public String toString() {
-        return Joiner.on('-').join(Splitter.fixedLength(4).limit(6).splitToList(data));
+        return Joiner.on(' ').join(Splitter.fixedLength(4).limit(6).splitToList(data)).toLowerCase();
     }
 
-    private static String checkSum8Modulo256(@NonNull final String vaan) {
+    private static String checkSumCrc8Wcdma(@NonNull final String vaan) {
         byte[] data = toBytes(vaan);
-        byte check = 0;
-        for (byte b : data) {
-            check += b;
-        }
-        return toHex(new byte[]{check}, false);
+        CRC crc = new CRC(CRC8_WCDMA);
+        long result = crc.calculateCRC(data);
+        return Long.toHexString(result);
     }
 
 }
