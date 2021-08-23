@@ -1,12 +1,12 @@
 {
   "originator": {
     "name": "05",
-    "vaan": "1000bbb4ee5c0000000005ce",
+    "vaan": "1000bbb4ee5c00000000055e",
     "bic": "PBANUA2XDZF"
   },
   "beneficiary": {
     "name": "0a",
-    "vaan": "10001cd48daa000000000a41"
+    "vaan": "10001cd48daa000000000a8e"
   },
   "transfer": {
     "va": "ETH",

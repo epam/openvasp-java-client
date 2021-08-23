@@ -252,11 +252,11 @@ class JsonSer2Tests {
         assertThat(beneficiary).isNotNull();
         assertThat(beneficiary.getName()).isEqualTo("name");
         var vaan = beneficiary.getVaan();
-        assertThat(vaan.getData()).isEqualTo("1000BBB4eE5Ce3fb082809e0");
+        assertThat(vaan.getData()).isEqualTo("1000bbb4ee5ce3fb08280947");
         assertThat(vaan.getCustomerNr()).isEqualTo("e3fb082809");
-        assertThat(vaan.getCheckSum()).isEqualTo("e0");
+        assertThat(vaan.getCheckSum()).isEqualTo("47");
         var vaspCode = vaan.getVaspCode();
-        assertThat(vaspCode).hasToString("BBB4eE5C");
+        assertThat(vaspCode).hasToString("bbb4ee5c");
         var vaspCodeType = vaan.getVaspCodeType();
         assertThat(vaspCodeType).isEqualTo("10");
     }
