@@ -71,6 +71,11 @@ public final class Vaan implements Serializable {
         byte[] data = toBytes(vaan);
         CRC crc = new CRC(CRC8_WCDMA);
         long result = crc.calculateCRC(data);
+        // checksum has to be hexadecimal string of the length of 2
+        // adding a leading zero if the result is between 0x0 and 0xf
+        if (result >= 0 && result < 16) {
+            return "0" + Long.toHexString(result);
+        }
         return Long.toHexString(result);
     }
 
