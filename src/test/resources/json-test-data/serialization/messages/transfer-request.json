@@ -1,7 +1,7 @@
 {
   "originator": {
     "name": "Test van der Test",
-    "vaan": "7dface61524ee3fb0828095d",
+    "vaan": "10007dface61fb0828095d55",
     "address": {
       "street": "StreetX",
       "number": "44",
@@ -26,7 +26,7 @@
   },
   "beneficiary": {
     "name": "name",
-    "vaan": "BBB4eE5C524ee3fb08280970"
+    "vaan": "1000bbb4ee5ce3fb08280947"
   },
   "transfer": {
     "va": "BTC",
