@@ -26,6 +26,7 @@ public final class Vaan implements Serializable {
 
     private static final String VAAN_FORMAT_ERROR = "VAAN should be a hexadecimal string of the length 24";
     private static final String VAAN_CHECKSUM_ERROR = "Invalid VAAN checksum: expected 0x%s but actual 0x%s";
+    private static final String VAAN_RESERVED_BITS = "00";
     private static final CRC.Parameters CRC8_WCDMA = new CRC.Parameters(8, 0x9B, 0x00, true, true, 0x00);
 
     @Getter(onMethod_ = {@JsonValue})
@@ -44,10 +45,11 @@ public final class Vaan implements Serializable {
         this.data = dataWithoutWhitespace;
     }
 
-    public Vaan(@NonNull final VaspCode vaspCode, @NonNull final String customerNr) {
+    public Vaan(@NonNull final VaspCodeType vaspCodeType, @NonNull final VaspCode vaspCode, @NonNull final String customerNr) {
         checkArgument(customerNr.length() == 10);
-        val raw = vaspCode + customerNr;
-        this.data = raw + checkSumCrc8Wcdma(raw);
+        val raw = vaspCodeType + VAAN_RESERVED_BITS + vaspCode + customerNr;
+        String dataWithoutWhitespace = StringUtils.deleteWhitespace(raw).toLowerCase();
+        this.data = dataWithoutWhitespace + checkSumCrc8Wcdma(dataWithoutWhitespace);
     }
 
     public VaspCodeType getVaspCodeType() { return new VaspCodeType(data.substring(0, 2)); }

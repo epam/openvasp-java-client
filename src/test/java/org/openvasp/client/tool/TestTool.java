@@ -10,6 +10,7 @@ import org.openvasp.client.crypto.ECDHKeyPair;
 import org.openvasp.client.crypto.X25519KeyPair;
 import org.openvasp.client.model.Vaan;
 import org.openvasp.client.model.VaspCode;
+import org.openvasp.client.model.VaspCodeType;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Keys;
 
@@ -93,10 +94,11 @@ public final class TestTool {
 
     // @SuppressWarnings("unused")
     private static void generateVaans(final String vaspCodeHex, int start, int count) {
+        VaspCodeType vaspCodeType = new VaspCodeType("10");
         val vaspCode = new VaspCode(vaspCodeHex);
         for (int i = start; i < start + count; i++) {
             val customerNr = String.format("%010x%04x", 0, i);
-            val vaan = new Vaan(vaspCode, customerNr);
+            val vaan = new Vaan(vaspCodeType, vaspCode, customerNr);
             System.out.println(vaan.getData());
         }
     }
