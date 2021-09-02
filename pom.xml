@@ -39,6 +39,7 @@
         <assertj.version>3.15.0</assertj.version>
         <jsonassert.version>1.5.0</jsonassert.version>
         <json-path.version>2.4.0</json-path.version>
+        <mockito.version>2.23.4</mockito.version>
 
         <!-- Project paramateres -->
         <whisper.node-1.url>${env.WHISPER_NODE_1_URL}</whisper.node-1.url>
@@ -203,6 +204,12 @@
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
             <version>${jsonassert.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
