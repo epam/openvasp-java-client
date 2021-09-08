@@ -33,6 +33,8 @@ public class SessionManagerImplTests {
     VaspInfo vaspInfo;
     EthAddr ethAddr;
     SessionManagerImpl sessionManager;
+    OriginatorSessionImpl originatorSession;
+    BeneficiarySessionImpl beneficiarySession;
 
     @BeforeEach
     public void init() {
@@ -45,71 +47,63 @@ public class SessionManagerImplTests {
         vaspConfig.setVaspCode(new VaspCode("7dface61"));
         vaspConfig.setHandshakePrivateKey("0xe7578145d518e5272d660ccfdeceedf2d55b90867f2b7a6e54dc726662aebac2");
         sessionManager = new SessionManagerImpl(vaspConfig, contractService, messageService);
+
+        originatorSession = (OriginatorSessionImpl) createOriginatorSession();
+        beneficiarySession = (BeneficiarySessionImpl) createBeneficiarySession();
     }
 
     @Test
     public void createOriginatorSessionTest() {
-        OriginatorSession originatorSession = createOriginatorSession();
         Assertions.assertEquals(Optional.of(originatorSession), sessionManager.getOriginatorSession(originatorSession.sessionId()));
     }
 
     @Test
     public void createBeneficiarySessionTest() {
-        BeneficiarySession beneficiarySession = createBeneficiarySession();
         Assertions.assertEquals(Optional.of(beneficiarySession), sessionManager.getBeneficiarySession(beneficiarySession.sessionId()));
     }
 
     @Test
-    public void removeOriginatorSessionTest() {
-        OriginatorSessionImpl originatorSession = (OriginatorSessionImpl) createOriginatorSession();
-        sessionManager.removeOriginatorSession(originatorSession);
-        Assertions.assertEquals(Optional.empty(), sessionManager.getOriginatorSession(originatorSession.sessionId()));
-    }
-
-    @Test
-    public void removeBeneficiarySessionTest() {
-        BeneficiarySessionImpl beneficiarySession = (BeneficiarySessionImpl) createBeneficiarySession();
-        sessionManager.removeBenefeciarySession(beneficiarySession);
-        Assertions.assertEquals(Optional.empty(), sessionManager.getOriginatorSession(beneficiarySession.sessionId()));
-    }
-
-    @Test
     public void restoreSessionStateTest() {
+        String id = "0xdc22ceb196a83a41ac9848cd11865cb2";
+
         SessionState sessionState = new SessionState();
         sessionState.setType(SessionState.Type.ORIGINATOR);
-        sessionState.setId("0xdc22ceb196a83a41ac9848cd11865cb2");
+        sessionState.setId(id);
         Session session = sessionManager.restoreSession(sessionState);
         Assertions.assertTrue(session instanceof OriginatorSessionImpl);
 
         sessionState = new SessionState();
         sessionState.setType(SessionState.Type.BENEFICIARY);
-        sessionState.setId("0xdc22ceb196a83a41ac9848cd11865cb2");
+        sessionState.setId(id);
         session = sessionManager.restoreSession(sessionState);
         Assertions.assertTrue(session instanceof BeneficiarySessionImpl);
     }
 
     @Test
     public void waitForNoActiveSessionTest() {
+        sessionManager.removeBenefeciarySession(beneficiarySession);
+        sessionManager.removeOriginatorSession(originatorSession);
         Assertions.assertTrue(sessionManager.waitForNoActiveSessions(1L));
     }
 
     @Test
     public void waitForBeneficiarySessionTest() {
-        BeneficiarySession beneficiarySession = createBeneficiarySession();
         Assertions.assertEquals(Optional.of(beneficiarySession), sessionManager.waitForBeneficiarySession(beneficiarySession.sessionId(),1L));
     }
 
     @Test
     public void sessionInfoTest() {
-        OriginatorSession originatorSession = createOriginatorSession();
-        Assertions.assertEquals(new VaspCode("7dface61"), sessionManager.vaspCode());
-        Assertions.assertEquals(new VaspCode("7dface61"), originatorSession.vaspInfo().getVaspCode());
+        VaspCode vaspCode = new VaspCode("7dface61");
+        Assertions.assertEquals(vaspCode, sessionManager.vaspCode());
+        Assertions.assertEquals(vaspCode, originatorSession.vaspInfo().getVaspCode());
         Assertions.assertEquals(TransferRequest.VirtualAssetType.BTC, originatorSession.transferInfo().getTransfer().getAssetType());
         Assertions.assertNull(originatorSession.peerVaspInfo());
     }
 
     @Test
     public void resolveSenderVaspIdTest() {
+        sessionManager.removeBenefeciarySession(beneficiarySession);
+
         SessionMessage vaspMessage = createSessionRequest();
         Assertions.assertEquals(Optional.of(ethAddr), sessionManager.resolveSenderVaspId(vaspMessage));
 
@@ -122,7 +116,6 @@ public class SessionManagerImplTests {
 
     @Test
     public void sendMessageBeneficiaryTest() {
-        BeneficiarySessionImpl beneficiarySession = (BeneficiarySessionImpl) createBeneficiarySession();
         SessionMessage vaspMessage = createSessionReply();
         beneficiarySession.sendMessage(vaspMessage);
         verify(messageService).send(any(),any(),any(),any());
@@ -130,40 +123,38 @@ public class SessionManagerImplTests {
 
     @Test
     public void onReceiveMessageOriginatorTest() {
-        OriginatorSessionImpl originatorSession = (OriginatorSessionImpl) createOriginatorSession();
-        TopicEvent<VaspMessage> topicEvent = new TopicEvent<>(new Topic("0xe6f72a9c"), createSessionReply());
+        Topic topic = new Topic("0xe6f72a9c");
 
+        TopicEvent<VaspMessage> topicEvent = new TopicEvent<>(topic, createSessionReply());
         originatorSession.onReceiveMessage(topicEvent);
         Assertions.assertEquals(new EthAddr("0x6befaf0656b953b188a0ee3bf3db03d07dface61"), originatorSession.getState().getPeerVaspInfo().getVaspId());
 
-        topicEvent = new TopicEvent<>(new Topic("0xe6f72a9c"), createTransferReply());
+        topicEvent = new TopicEvent<>(topic, createTransferReply());
         originatorSession.onReceiveMessage(topicEvent);
         Assertions.assertEquals("0x6befaf0656b953b188a0ee3bf3db03d07dface61", originatorSession.getState().getTransferInfo().getDestinationAddress());
     }
 
     @Test
     public void onReceiveMessageBeneficiaryTest() {
-        BeneficiarySessionImpl beneficiarySession = (BeneficiarySessionImpl) createBeneficiarySession();
-        TopicEvent<VaspMessage> topicEvent = new TopicEvent<>(new Topic("0xe6f72a9c"), createTransferRequest());
+        Topic topic = new Topic("0xe6f72a9c");
 
+        TopicEvent<VaspMessage> topicEvent = new TopicEvent<>(topic, createTransferRequest());
         beneficiarySession.onReceiveMessage(topicEvent);
         Assertions.assertEquals(createBeneficiary(), beneficiarySession.getState().getTransferInfo().getBeneficiary());
 
-        topicEvent = new TopicEvent<>(new Topic("0xe6f72a9c"), createTransferDispatch());
+        topicEvent = new TopicEvent<>(topic, createTransferDispatch());
         beneficiarySession.onReceiveMessage(topicEvent);
         Assertions.assertEquals("tx0001", beneficiarySession.getState().getTransferInfo().getTx().getId());
     }
 
     @Test
     public void startTransferTest() {
-        OriginatorSessionImpl originatorSession = (OriginatorSessionImpl) createOriginatorSession();
         originatorSession.startTransfer();
         verify(messageService).send(any(),any(),any(),any());
     }
 
     @Test
     public void takeIncomingMessageTest() {
-        OriginatorSessionImpl originatorSession = (OriginatorSessionImpl) createOriginatorSession();
         Assertions.assertEquals(Optional.empty(), originatorSession.takeIncomingMessage(1L));
 
         VaspMessage vaspMessage = createSessionReply();
@@ -173,19 +164,19 @@ public class SessionManagerImplTests {
 
     private OriginatorSession createOriginatorSession() {
         TransferInfo transferInfo = new TransferInfo();
-        transferInfo.setBeneficiary(new Beneficiary("John Smith", new Vaan("1000a0b1c2d3c2d3e4f5ffce")));
+        transferInfo.setBeneficiary(createBeneficiary());
         TransferRequest.Transfer transfer = new TransferRequest.Transfer();
         transfer.setAssetType(TransferRequest.VirtualAssetType.BTC);
         transferInfo.setTransfer(transfer);
+
         VaspContractInfo vaspContractInfo = new VaspContractInfo();
         vaspContractInfo.setHandshakeKey("0x044ffeb548a05b879757dc37911bb41f95966311b00b8687da8913c6b0bf7deddd1c233d8294e0c31f0099058bf056c0f5fb8919e87bf148b0f04ace8f19004bb9");
+
         when(contractService.getVaspContractInfo((VaspCode) any())).thenReturn(vaspContractInfo);
         return sessionManager.createOriginatorSession(transferInfo);
     }
 
     private BeneficiarySession createBeneficiarySession() {
-        VaspContractInfo vaspContractInfo = new VaspContractInfo();
-        vaspContractInfo.setHandshakeKey("0x044ffeb548a05b879757dc37911bb41f95966311b00b8687da8913c6b0bf7deddd1c233d8294e0c31f0099058bf056c0f5fb8919e87bf148b0f04ace8f19004bb9");
         return new BeneficiarySessionImpl(sessionManager, (SessionRequest) createSessionRequest());
     }
 
