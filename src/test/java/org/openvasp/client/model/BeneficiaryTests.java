@@ -7,9 +7,10 @@ import org.openvasp.client.common.VaspValidationException;
 public class BeneficiaryTests {
 
     @Test
-    public void missingNameTest() {
+    public void beneficiaryWithNoNameShouldFail() {
         Beneficiary beneficiary = new Beneficiary("", new Vaan("10007dface61fb0828095d55"));
         VaspMessage vaspMessage = new SessionRequest();
-        Assertions.assertThrows(VaspValidationException.class, () -> beneficiary.validate(vaspMessage));
+        VaspValidationException exception = Assertions.assertThrows(VaspValidationException.class, () -> beneficiary.validate(vaspMessage));
+        Assertions.assertEquals("Beneficiary name must be present", exception.getMessage());
     }
 }

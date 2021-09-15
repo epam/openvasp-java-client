@@ -19,23 +19,26 @@ public class BirthInfoTests {
     }
 
     @Test
-    public void missingBirthDateTest() {
+    public void missingBirthDateShouldFail() {
         birthInfo.setBirthCity("Zurich");
         birthInfo.setBirthCountry(Country.fromCode("CH"));
-        Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        VaspValidationException exception = Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        Assertions.assertEquals("Birth date must be present", exception.getMessage());
     }
 
     @Test
-    public void missingBirthCityTest() {
+    public void missingBirthCityShouldFail() {
         birthInfo.setBirthDate(LocalDate.of(2000, 1, 1));
         birthInfo.setBirthCountry(Country.fromCode("CH"));
-        Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        VaspValidationException exception = Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        Assertions.assertEquals("Birth city must be present", exception.getMessage());
     }
 
     @Test
-    public void missingBirthCountryTest() {
+    public void missingBirthCountryShouldFail() {
         birthInfo.setBirthDate(LocalDate.of(2000, 1, 1));
         birthInfo.setBirthCity("Zurich");
-        Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        VaspValidationException exception = Assertions.assertThrows(VaspValidationException.class, () -> birthInfo.validate(vaspMessage));
+        Assertions.assertEquals("Birth country must be present", exception.getMessage());
     }
 }
