@@ -31,15 +31,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Build, test with Maven
-        run: mvn --batch-mode test
-      - name: SonarCloud Scan
-        uses: kitabisa/sonarqube-action@v1.1.0
-        with:
-          host: ${{ secrets.SONARQUBE_HOST }}
-          login: ${{ secrets.SONARQUBE_TOKEN }}
-          projectBaseDir: "./src"
-          projectKey: "openvasp-java-client"
-          projectName: "openvasp-java-client"
-          projectVersion: "0.0.2"
+        run: mvn -ntp test
+      - name: Sonar Scan
+        run: mvn sonar:sonar -Psonar -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
       - name: Package with Maven
-        run: mvn --batch-mode package
+        run: mvn -ntp package
