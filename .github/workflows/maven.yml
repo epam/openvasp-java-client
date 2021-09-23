@@ -8,12 +8,31 @@ on:
     paths-ignore:
       - '**.md'
   pull_request:
-    branches: [ master ]
+    branches:
+      - 'master'
+      - 'feature/.*'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONARQUBE_HOST }}
+      - name: SonarQube Quality Gate check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        timeout-minutes: 1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
   build:
+    needs: sonarqube
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,8 +50,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Build, test with Maven
-        run: mvn -ntp test
-      - name: Sonar Scan
-        run: mvn sonar:sonar -Psonar -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
-      - name: Package with Maven
-        run: mvn -ntp package
+        run: mvn -ntp test package
