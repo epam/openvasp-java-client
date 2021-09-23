@@ -1,17 +1,11 @@
-# This workflow will build a Java project with Maven
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 name: Java CI with Maven
 
 on:
-  push:
-    # But do no run the pipeline when only `md` files are modified.
-    paths-ignore:
-      - '**.md'
   pull_request:
     branches:
       - 'master'
-      - 'feature/.*'
-  # Allows you to run this workflow manually from the Actions tab
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
 
 jobs:
@@ -53,4 +47,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
 
       - name: Make a jar with Maven
-        run: mvn -ntp package
+        run: mvn -ntp package -DskipTests
