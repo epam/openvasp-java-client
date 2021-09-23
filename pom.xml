@@ -385,6 +385,11 @@
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.7.0.1746</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -417,5 +422,15 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <properties>
+                <sonar.projectKey>openvasp-java-client</sonar.projectKey>
+                <sonar.host.url>https://sonar.getopenvasp.com</sonar.host.url>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
