@@ -113,6 +113,7 @@ public final class WhisperServiceImpl implements WhisperService {
         try {
             return state.get() == TERMINATED || termination.await(msTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return false;
         } finally {
             stateCtl.unlock();
@@ -266,7 +267,7 @@ public final class WhisperServiceImpl implements WhisperService {
                 Thread.sleep(POLL_TIMEOUT);
             }
         } catch (InterruptedException ex) {
-            // Do nothing, just exit
+            Thread.currentThread().interrupt();
         } catch (WhisperIOException ex) {
             val cause = ex.getCause();
             if (!(cause instanceof InterruptedIOException)) {

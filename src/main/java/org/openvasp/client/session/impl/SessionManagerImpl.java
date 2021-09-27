@@ -102,6 +102,7 @@ public final class SessionManagerImpl implements SessionManager, VaspIdentitySer
                         : Optional.empty();
             }
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return Optional.empty();
         } finally {
             sessionsLock.unlock();
@@ -115,6 +116,7 @@ public final class SessionManagerImpl implements SessionManager, VaspIdentitySer
             return originatorSessions.isEmpty() && beneficiarySessions.isEmpty() ||
                     noActiveSessions.await(msTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return false;
         } finally {
             sessionsLock.unlock();

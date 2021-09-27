@@ -116,6 +116,7 @@ abstract class AbstractSession implements Session {
                         : Optional.empty();
             }
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return Optional.empty();
         } finally {
             incomingQueueLock.unlock();
