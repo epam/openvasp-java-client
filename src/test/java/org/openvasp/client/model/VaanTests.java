@@ -37,7 +37,7 @@ public class VaanTests {
         assertFormat(vaan);
         vaan = new Vaan("1000 BB528777 E33B078520 9E");
         assertFormat(vaan);
-        vaan = new Vaan("1000BB52 8777e33b0785209e");
+        vaan = new Vaan(new VaspCodeType("10"), new VaspCode("BB528777"), "e33b078520");
         assertFormat(vaan);
     }
 

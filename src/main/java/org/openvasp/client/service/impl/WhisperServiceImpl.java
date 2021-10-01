@@ -340,7 +340,7 @@ public final class WhisperServiceImpl implements WhisperService {
     private static final AtomicLong nextTopicListenerId = new AtomicLong(0L);
 
     @Getter
-    private class TopicListenerRecord implements AutoCloseable, TopicListener<ShhMessage> {
+    class TopicListenerRecord implements AutoCloseable, TopicListener<ShhMessage> {
 
         final Topic topic;
         final EncryptionType encType;
